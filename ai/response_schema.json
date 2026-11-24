@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "comentariu": { "type": "string" },
+    "cauze": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "nivel_alerta": {
+      "type": "string",
+      "enum": ["Verde", "Galben", "Roșu"]
+    },
+    "actiune": { "type": "string" }
+  },
+  "required": ["comentariu", "cauze", "nivel_alerta", "actiune"]
+}

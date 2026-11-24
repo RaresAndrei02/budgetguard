@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_Flux1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="BudgetGuard build_bpmn.py" exporterVersion="1.0">
+  <bpmn:collaboration id="Collaboration_Definitions_Flux1">
+    <bpmn:participant id="Participant_Vestra" name="Vestra Retail SRL - BudgetGuard (Flux 1: cerere de achizitie)" processRef="Process_Flux1" />
+    <bpmn:participant id="Participant_ANAF" name="ANAF - serviciu web TVA v9" />
+    <bpmn:participant id="Participant_BNR" name="BNR - curs valutar zilnic" />
+    <bpmn:messageFlow id="MsgFlow_Task_ANAF_Participant_ANAF" name="CUI + data" sourceRef="Task_ANAF" targetRef="Participant_ANAF" />
+    <bpmn:messageFlow id="MsgFlow_Participant_ANAF_Task_ANAF" name="date firma (found / notFound)" sourceRef="Participant_ANAF" targetRef="Task_ANAF" />
+    <bpmn:messageFlow id="MsgFlow_Task_BNR_Participant_BNR" name="GET curs" sourceRef="Task_BNR" targetRef="Participant_BNR" />
+    <bpmn:messageFlow id="MsgFlow_Participant_BNR_Task_BNR" name="curs EUR / USD" sourceRef="Participant_BNR" targetRef="Task_BNR" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Flux1" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_Process_Flux1">
+      <bpmn:lane id="Lane_Solicitant" name="Solicitant">
+        <bpmn:flowNodeRef>Start_Cerere</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Sistem" name="Sistem BudgetGuard (Power Automate)">
+        <bpmn:flowNodeRef>Task_Inregistrare</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ANAF</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_BNR</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_VerificaBuget</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_DateValide</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_StatusInAprobare</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Send_NotifInAprobare</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RespinsaValidare</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Send_NotifRespValidare</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_RespinsaValidare</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_PesteBuget</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_MergeAprobat</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_StatusAprobata</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AngajeazaBuget</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Send_NotifAprobare</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Aprobata</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_MergeRespins</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_StatusRespinsa</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Send_NotifRespingere</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Respinsa</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Manager" name="Manager centru de cost">
+        <bpmn:flowNodeRef>User_Aprobare1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Aprobat1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Timer_Aprobare1</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Controlling" name="Controlling">
+        <bpmn:flowNodeRef>User_Aprobare2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Aprobat2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Timer_Aprobare2</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Financiar" name="Director financiar">
+        <bpmn:flowNodeRef>User_Aprobare3</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Aprobat3</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Timer_Aprobare3</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_CFO" name="CFO">
+        <bpmn:flowNodeRef>User_Aprobare4</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_Aprobat4</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Timer_Aprobare4</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_Cerere" name="Cerere trimisa (Microsoft Forms)">
+      <bpmn:outgoing>Flow_Start_Cerere_Task_Inregistrare</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_Forms" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Inregistrare" name="Inregistreaza cererea (ID PR-..., status Noua)">
+      <bpmn:incoming>Flow_Start_Cerere_Task_Inregistrare</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_Inregistrare_Task_ANAF</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOut_Task_Inregistrare_Store_Cereri1"><bpmn:targetRef>Store_Cereri1</bpmn:targetRef></bpmn:dataOutputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_ANAF" name="Valideaza furnizorul la ANAF (V1, V2, W3)">
+      <bpmn:incoming>Flow_Task_Inregistrare_Task_ANAF</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_ANAF_Task_BNR</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_BNR" name="Obtine cursul BNR, calculeaza Valoare_RON (V3)">
+      <bpmn:incoming>Flow_Task_ANAF_Task_BNR</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_BNR_Task_VerificaBuget</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_VerificaBuget" name="Verifica data si bugetul (V4, V5, W1, W2)">
+      <bpmn:incoming>Flow_Task_BNR_Task_VerificaBuget</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_VerificaBuget_Gateway_DateValide</bpmn:outgoing>
+      <bpmn:property id="Property_Task_VerificaBuget" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataIn_Store_Bugete1_Task_VerificaBuget"><bpmn:sourceRef>Store_Bugete1</bpmn:sourceRef><bpmn:targetRef>Property_Task_VerificaBuget</bpmn:targetRef></bpmn:dataInputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_DateValide" name="Date valide?">
+      <bpmn:incoming>Flow_Task_VerificaBuget_Gateway_DateValide</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_DateValide_Task_StatusInAprobare</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Gateway_DateValide_Task_RespinsaValidare</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_StatusInAprobare" name="Seteaza status 'In aprobare'">
+      <bpmn:incoming>Flow_Gateway_DateValide_Task_StatusInAprobare</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_StatusInAprobare_Send_NotifInAprobare</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sendTask id="Send_NotifInAprobare" name="Notifica solicitantul (email + Teams)">
+      <bpmn:incoming>Flow_Task_StatusInAprobare_Send_NotifInAprobare</bpmn:incoming>
+      <bpmn:outgoing>Flow_Send_NotifInAprobare_User_Aprobare1</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:serviceTask id="Task_RespinsaValidare" name="Seteaza status 'Respinsa' (motive validare)">
+      <bpmn:incoming>Flow_Gateway_DateValide_Task_RespinsaValidare</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_RespinsaValidare_Send_NotifRespValidare</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sendTask id="Send_NotifRespValidare" name="Notifica respingerea (email + Teams)">
+      <bpmn:incoming>Flow_Task_RespinsaValidare_Send_NotifRespValidare</bpmn:incoming>
+      <bpmn:outgoing>Flow_Send_NotifRespValidare_End_RespinsaValidare</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_RespinsaValidare" name="Respinsa la validare">
+      <bpmn:incoming>Flow_Send_NotifRespValidare_End_RespinsaValidare</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="User_Aprobare1" name="Aprobare pas 1 - manager CC">
+      <bpmn:incoming>Flow_Send_NotifInAprobare_User_Aprobare1</bpmn:incoming>
+      <bpmn:outgoing>Flow_User_Aprobare1_Gateway_Aprobat1</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Aprobat1" name="Aprobat?">
+      <bpmn:incoming>Flow_User_Aprobare1_Gateway_Aprobat1</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_Aprobat1_User_Aprobare2</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Gateway_Aprobat1_Gateway_MergeRespins</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="User_Aprobare2" name="Aprobare pas 2 - controlling">
+      <bpmn:incoming>Flow_Gateway_Aprobat1_User_Aprobare2</bpmn:incoming>
+      <bpmn:outgoing>Flow_User_Aprobare2_Gateway_Aprobat2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Aprobat2" name="Aprobat?">
+      <bpmn:incoming>Flow_User_Aprobare2_Gateway_Aprobat2</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_Aprobat2_User_Aprobare3</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Gateway_Aprobat2_Gateway_MergeRespins</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="User_Aprobare3" name="Aprobare pas 3 - director financiar">
+      <bpmn:incoming>Flow_Gateway_Aprobat2_User_Aprobare3</bpmn:incoming>
+      <bpmn:outgoing>Flow_User_Aprobare3_Gateway_Aprobat3</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Aprobat3" name="Aprobat?">
+      <bpmn:incoming>Flow_User_Aprobare3_Gateway_Aprobat3</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_Aprobat3_Gateway_PesteBuget</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Gateway_Aprobat3_Gateway_MergeRespins</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="Gateway_PesteBuget" name="Peste buget?">
+      <bpmn:incoming>Flow_Gateway_Aprobat3_Gateway_PesteBuget</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_PesteBuget_User_Aprobare4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Gateway_PesteBuget_Gateway_MergeAprobat</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="User_Aprobare4" name="Aprobare pas 4 - CFO">
+      <bpmn:incoming>Flow_Gateway_PesteBuget_User_Aprobare4</bpmn:incoming>
+      <bpmn:outgoing>Flow_User_Aprobare4_Gateway_Aprobat4</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_Aprobat4" name="Aprobat?">
+      <bpmn:incoming>Flow_User_Aprobare4_Gateway_Aprobat4</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_Aprobat4_Gateway_MergeAprobat</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Gateway_Aprobat4_Gateway_MergeRespins</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:boundaryEvent id="Timer_Aprobare1" name="7 zile" attachedToRef="User_Aprobare1">
+      <bpmn:outgoing>Flow_Timer_Aprobare1_Gateway_MergeRespins</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_1"><bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P7D</bpmn:timeDuration></bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="Timer_Aprobare2" name="7 zile" attachedToRef="User_Aprobare2">
+      <bpmn:outgoing>Flow_Timer_Aprobare2_Gateway_MergeRespins</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_2"><bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P7D</bpmn:timeDuration></bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="Timer_Aprobare3" name="7 zile" attachedToRef="User_Aprobare3">
+      <bpmn:outgoing>Flow_Timer_Aprobare3_Gateway_MergeRespins</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_3"><bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P7D</bpmn:timeDuration></bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:boundaryEvent id="Timer_Aprobare4" name="7 zile" attachedToRef="User_Aprobare4">
+      <bpmn:outgoing>Flow_Timer_Aprobare4_Gateway_MergeRespins</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_4"><bpmn:timeDuration xsi:type="bpmn:tFormalExpression">P7D</bpmn:timeDuration></bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:exclusiveGateway id="Gateway_MergeAprobat">
+      <bpmn:incoming>Flow_Gateway_PesteBuget_Gateway_MergeAprobat</bpmn:incoming>
+      <bpmn:incoming>Flow_Gateway_Aprobat4_Gateway_MergeAprobat</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_MergeAprobat_Task_StatusAprobata</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_StatusAprobata" name="Seteaza status 'Aprobata'">
+      <bpmn:incoming>Flow_Gateway_MergeAprobat_Task_StatusAprobata</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_StatusAprobata_Task_AngajeazaBuget</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOut_Task_StatusAprobata_Store_Cereri2"><bpmn:targetRef>Store_Cereri2</bpmn:targetRef></bpmn:dataOutputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_AngajeazaBuget" name="Angajeaza suma in buget (Angajat_RON, Ramas_RON)">
+      <bpmn:incoming>Flow_Task_StatusAprobata_Task_AngajeazaBuget</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_AngajeazaBuget_Send_NotifAprobare</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOut_Task_AngajeazaBuget_Store_Bugete2"><bpmn:targetRef>Store_Bugete2</bpmn:targetRef></bpmn:dataOutputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:sendTask id="Send_NotifAprobare" name="Notifica aprobarea (email + Teams)">
+      <bpmn:incoming>Flow_Task_AngajeazaBuget_Send_NotifAprobare</bpmn:incoming>
+      <bpmn:outgoing>Flow_Send_NotifAprobare_End_Aprobata</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_Aprobata" name="Cerere aprobata">
+      <bpmn:incoming>Flow_Send_NotifAprobare_End_Aprobata</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:exclusiveGateway id="Gateway_MergeRespins">
+      <bpmn:incoming>Flow_Gateway_Aprobat1_Gateway_MergeRespins</bpmn:incoming>
+      <bpmn:incoming>Flow_Timer_Aprobare1_Gateway_MergeRespins</bpmn:incoming>
+      <bpmn:incoming>Flow_Gateway_Aprobat2_Gateway_MergeRespins</bpmn:incoming>
+      <bpmn:incoming>Flow_Timer_Aprobare2_Gateway_MergeRespins</bpmn:incoming>
+      <bpmn:incoming>Flow_Gateway_Aprobat3_Gateway_MergeRespins</bpmn:incoming>
+      <bpmn:incoming>Flow_Timer_Aprobare3_Gateway_MergeRespins</bpmn:incoming>
+      <bpmn:incoming>Flow_Gateway_Aprobat4_Gateway_MergeRespins</bpmn:incoming>
+      <bpmn:incoming>Flow_Timer_Aprobare4_Gateway_MergeRespins</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_MergeRespins_Task_StatusRespinsa</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_StatusRespinsa" name="Seteaza status 'Respinsa' (motivul aprobatorului)">
+      <bpmn:incoming>Flow_Gateway_MergeRespins_Task_StatusRespinsa</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_StatusRespinsa_Send_NotifRespingere</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sendTask id="Send_NotifRespingere" name="Notifica respingerea (email + Teams)">
+      <bpmn:incoming>Flow_Task_StatusRespinsa_Send_NotifRespingere</bpmn:incoming>
+      <bpmn:outgoing>Flow_Send_NotifRespingere_End_Respinsa</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_Respinsa" name="Cerere respinsa">
+      <bpmn:incoming>Flow_Send_NotifRespingere_End_Respinsa</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:dataStoreReference id="Store_Cereri1" name="Cereri_Achizitie" />
+    <bpmn:dataStoreReference id="Store_Bugete1" name="Bugete" />
+    <bpmn:dataStoreReference id="Store_Cereri2" name="Cereri_Achizitie" />
+    <bpmn:dataStoreReference id="Store_Bugete2" name="Bugete" />
+    <bpmn:sequenceFlow id="Flow_Start_Cerere_Task_Inregistrare" sourceRef="Start_Cerere" targetRef="Task_Inregistrare" />
+    <bpmn:sequenceFlow id="Flow_Task_Inregistrare_Task_ANAF" sourceRef="Task_Inregistrare" targetRef="Task_ANAF" />
+    <bpmn:sequenceFlow id="Flow_Task_ANAF_Task_BNR" sourceRef="Task_ANAF" targetRef="Task_BNR" />
+    <bpmn:sequenceFlow id="Flow_Task_BNR_Task_VerificaBuget" sourceRef="Task_BNR" targetRef="Task_VerificaBuget" />
+    <bpmn:sequenceFlow id="Flow_Task_VerificaBuget_Gateway_DateValide" sourceRef="Task_VerificaBuget" targetRef="Gateway_DateValide" />
+    <bpmn:sequenceFlow id="Flow_Gateway_DateValide_Task_StatusInAprobare" name="Da" sourceRef="Gateway_DateValide" targetRef="Task_StatusInAprobare" />
+    <bpmn:sequenceFlow id="Flow_Gateway_DateValide_Task_RespinsaValidare" name="Nu" sourceRef="Gateway_DateValide" targetRef="Task_RespinsaValidare" />
+    <bpmn:sequenceFlow id="Flow_Task_RespinsaValidare_Send_NotifRespValidare" sourceRef="Task_RespinsaValidare" targetRef="Send_NotifRespValidare" />
+    <bpmn:sequenceFlow id="Flow_Send_NotifRespValidare_End_RespinsaValidare" sourceRef="Send_NotifRespValidare" targetRef="End_RespinsaValidare" />
+    <bpmn:sequenceFlow id="Flow_Task_StatusInAprobare_Send_NotifInAprobare" sourceRef="Task_StatusInAprobare" targetRef="Send_NotifInAprobare" />
+    <bpmn:sequenceFlow id="Flow_Send_NotifInAprobare_User_Aprobare1" sourceRef="Send_NotifInAprobare" targetRef="User_Aprobare1" />
+    <bpmn:sequenceFlow id="Flow_User_Aprobare1_Gateway_Aprobat1" sourceRef="User_Aprobare1" targetRef="Gateway_Aprobat1" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Aprobat1_User_Aprobare2" name="Da" sourceRef="Gateway_Aprobat1" targetRef="User_Aprobare2" />
+    <bpmn:sequenceFlow id="Flow_User_Aprobare2_Gateway_Aprobat2" sourceRef="User_Aprobare2" targetRef="Gateway_Aprobat2" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Aprobat2_User_Aprobare3" name="Da" sourceRef="Gateway_Aprobat2" targetRef="User_Aprobare3" />
+    <bpmn:sequenceFlow id="Flow_User_Aprobare3_Gateway_Aprobat3" sourceRef="User_Aprobare3" targetRef="Gateway_Aprobat3" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Aprobat3_Gateway_PesteBuget" name="Da" sourceRef="Gateway_Aprobat3" targetRef="Gateway_PesteBuget" />
+    <bpmn:sequenceFlow id="Flow_Gateway_PesteBuget_User_Aprobare4" name="Da" sourceRef="Gateway_PesteBuget" targetRef="User_Aprobare4" />
+    <bpmn:sequenceFlow id="Flow_Gateway_PesteBuget_Gateway_MergeAprobat" name="Nu" sourceRef="Gateway_PesteBuget" targetRef="Gateway_MergeAprobat" />
+    <bpmn:sequenceFlow id="Flow_User_Aprobare4_Gateway_Aprobat4" sourceRef="User_Aprobare4" targetRef="Gateway_Aprobat4" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Aprobat4_Gateway_MergeAprobat" name="Da" sourceRef="Gateway_Aprobat4" targetRef="Gateway_MergeAprobat" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Aprobat1_Gateway_MergeRespins" name="Nu" sourceRef="Gateway_Aprobat1" targetRef="Gateway_MergeRespins" />
+    <bpmn:sequenceFlow id="Flow_Timer_Aprobare1_Gateway_MergeRespins" sourceRef="Timer_Aprobare1" targetRef="Gateway_MergeRespins" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Aprobat2_Gateway_MergeRespins" name="Nu" sourceRef="Gateway_Aprobat2" targetRef="Gateway_MergeRespins" />
+    <bpmn:sequenceFlow id="Flow_Timer_Aprobare2_Gateway_MergeRespins" sourceRef="Timer_Aprobare2" targetRef="Gateway_MergeRespins" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Aprobat3_Gateway_MergeRespins" name="Nu" sourceRef="Gateway_Aprobat3" targetRef="Gateway_MergeRespins" />
+    <bpmn:sequenceFlow id="Flow_Timer_Aprobare3_Gateway_MergeRespins" sourceRef="Timer_Aprobare3" targetRef="Gateway_MergeRespins" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Aprobat4_Gateway_MergeRespins" name="Nu" sourceRef="Gateway_Aprobat4" targetRef="Gateway_MergeRespins" />
+    <bpmn:sequenceFlow id="Flow_Timer_Aprobare4_Gateway_MergeRespins" sourceRef="Timer_Aprobare4" targetRef="Gateway_MergeRespins" />
+    <bpmn:sequenceFlow id="Flow_Gateway_MergeAprobat_Task_StatusAprobata" sourceRef="Gateway_MergeAprobat" targetRef="Task_StatusAprobata" />
+    <bpmn:sequenceFlow id="Flow_Task_StatusAprobata_Task_AngajeazaBuget" sourceRef="Task_StatusAprobata" targetRef="Task_AngajeazaBuget" />
+    <bpmn:sequenceFlow id="Flow_Task_AngajeazaBuget_Send_NotifAprobare" sourceRef="Task_AngajeazaBuget" targetRef="Send_NotifAprobare" />
+    <bpmn:sequenceFlow id="Flow_Send_NotifAprobare_End_Aprobata" sourceRef="Send_NotifAprobare" targetRef="End_Aprobata" />
+    <bpmn:sequenceFlow id="Flow_Gateway_MergeRespins_Task_StatusRespinsa" sourceRef="Gateway_MergeRespins" targetRef="Task_StatusRespinsa" />
+    <bpmn:sequenceFlow id="Flow_Task_StatusRespinsa_Send_NotifRespingere" sourceRef="Task_StatusRespinsa" targetRef="Send_NotifRespingere" />
+    <bpmn:sequenceFlow id="Flow_Send_NotifRespingere_End_Respinsa" sourceRef="Send_NotifRespingere" targetRef="End_Respinsa" />
+    <bpmn:textAnnotation id="Annotation_Aprobatori"><bpmn:text>Aprobatorii (manager CC, controlling, financiar, CFO) vin din lista Config; in flux: Do until peste varAprobatori, cu iesire la prima respingere. Mod demo (mod_demo = true): un singur aprobator (adresa din email_bcc).</bpmn:text></bpmn:textAnnotation>
+    <bpmn:association id="Assoc_Annotation_Aprobatori_User_Aprobare1" sourceRef="Annotation_Aprobatori" targetRef="User_Aprobare1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_Definitions_Flux1">
+    <bpmndi:BPMNPlane id="Plane_Definitions_Flux1" bpmnElement="Collaboration_Definitions_Flux1">
+    <bpmndi:BPMNShape id="Participant_Vestra_di" bpmnElement="Participant_Vestra" isHorizontal="true"><dc:Bounds x="150" y="150" width="3370" height="1030" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Participant_ANAF_di" bpmnElement="Participant_ANAF" isHorizontal="true"><dc:Bounds x="380" y="40" width="260" height="60" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Participant_BNR_di" bpmnElement="Participant_BNR" isHorizontal="true"><dc:Bounds x="650" y="40" width="260" height="60" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Lane_Solicitant_di" bpmnElement="Lane_Solicitant" isHorizontal="true"><dc:Bounds x="180" y="150" width="3340" height="130" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Lane_Sistem_di" bpmnElement="Lane_Sistem" isHorizontal="true"><dc:Bounds x="180" y="280" width="3340" height="380" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Lane_Manager_di" bpmnElement="Lane_Manager" isHorizontal="true"><dc:Bounds x="180" y="660" width="3340" height="130" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Lane_Controlling_di" bpmnElement="Lane_Controlling" isHorizontal="true"><dc:Bounds x="180" y="790" width="3340" height="130" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Lane_Financiar_di" bpmnElement="Lane_Financiar" isHorizontal="true"><dc:Bounds x="180" y="920" width="3340" height="130" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Lane_CFO_di" bpmnElement="Lane_CFO" isHorizontal="true"><dc:Bounds x="180" y="1050" width="3340" height="130" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Start_Cerere_di" bpmnElement="Start_Cerere"><dc:Bounds x="252" y="197" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="220" y="237" width="100" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_Inregistrare_di" bpmnElement="Task_Inregistrare"><dc:Bounds x="370" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_ANAF_di" bpmnElement="Task_ANAF"><dc:Bounds x="520" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_BNR_di" bpmnElement="Task_BNR"><dc:Bounds x="670" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_VerificaBuget_di" bpmnElement="Task_VerificaBuget"><dc:Bounds x="820" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Gateway_DateValide_di" bpmnElement="Gateway_DateValide" isMarkerVisible="true"><dc:Bounds x="995" y="445" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="970" y="414" width="100" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_StatusInAprobare_di" bpmnElement="Task_StatusInAprobare"><dc:Bounds x="1120" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Send_NotifInAprobare_di" bpmnElement="Send_NotifInAprobare"><dc:Bounds x="1270" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_RespinsaValidare_di" bpmnElement="Task_RespinsaValidare"><dc:Bounds x="970" y="550" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Send_NotifRespValidare_di" bpmnElement="Send_NotifRespValidare"><dc:Bounds x="1120" y="550" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="End_RespinsaValidare_di" bpmnElement="End_RespinsaValidare"><dc:Bounds x="1302" y="572" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1270" y="612" width="100" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="User_Aprobare1_di" bpmnElement="User_Aprobare1"><dc:Bounds x="1420" y="685" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Gateway_Aprobat1_di" bpmnElement="Gateway_Aprobat1" isMarkerVisible="true"><dc:Bounds x="1595" y="700" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="1649" y="715" width="60" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="User_Aprobare2_di" bpmnElement="User_Aprobare2"><dc:Bounds x="1720" y="815" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Gateway_Aprobat2_di" bpmnElement="Gateway_Aprobat2" isMarkerVisible="true"><dc:Bounds x="1895" y="830" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="1949" y="845" width="60" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="User_Aprobare3_di" bpmnElement="User_Aprobare3"><dc:Bounds x="2020" y="945" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Gateway_Aprobat3_di" bpmnElement="Gateway_Aprobat3" isMarkerVisible="true"><dc:Bounds x="2195" y="960" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="2170" y="1014" width="100" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Gateway_PesteBuget_di" bpmnElement="Gateway_PesteBuget" isMarkerVisible="true"><dc:Bounds x="2345" y="445" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="2320" y="414" width="100" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="User_Aprobare4_di" bpmnElement="User_Aprobare4"><dc:Bounds x="2470" y="1075" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Gateway_Aprobat4_di" bpmnElement="Gateway_Aprobat4" isMarkerVisible="true"><dc:Bounds x="2645" y="1090" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="2620" y="1144" width="100" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Timer_Aprobare1_di" bpmnElement="Timer_Aprobare1"><dc:Bounds x="1477" y="667" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1516" y="659" width="40" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Timer_Aprobare2_di" bpmnElement="Timer_Aprobare2"><dc:Bounds x="1777" y="797" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="1816" y="789" width="40" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Timer_Aprobare3_di" bpmnElement="Timer_Aprobare3"><dc:Bounds x="2077" y="927" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2116" y="919" width="40" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Timer_Aprobare4_di" bpmnElement="Timer_Aprobare4"><dc:Bounds x="2527" y="1057" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2566" y="1049" width="40" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Gateway_MergeAprobat_di" bpmnElement="Gateway_MergeAprobat" isMarkerVisible="true"><dc:Bounds x="2795" y="445" width="50" height="50" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_StatusAprobata_di" bpmnElement="Task_StatusAprobata"><dc:Bounds x="2920" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_AngajeazaBuget_di" bpmnElement="Task_AngajeazaBuget"><dc:Bounds x="3070" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Send_NotifAprobare_di" bpmnElement="Send_NotifAprobare"><dc:Bounds x="3220" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="End_Aprobata_di" bpmnElement="End_Aprobata"><dc:Bounds x="3402" y="452" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="3370" y="492" width="100" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Gateway_MergeRespins_di" bpmnElement="Gateway_MergeRespins" isMarkerVisible="true"><dc:Bounds x="2945" y="565" width="50" height="50" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_StatusRespinsa_di" bpmnElement="Task_StatusRespinsa"><dc:Bounds x="3070" y="550" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Send_NotifRespingere_di" bpmnElement="Send_NotifRespingere"><dc:Bounds x="3220" y="550" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="End_Respinsa_di" bpmnElement="End_Respinsa"><dc:Bounds x="3402" y="572" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="3370" y="612" width="100" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Store_Cereri1_di" bpmnElement="Store_Cereri1"><dc:Bounds x="395" y="315" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="449" y="330" width="95" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Store_Bugete1_di" bpmnElement="Store_Bugete1"><dc:Bounds x="845" y="315" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="899" y="330" width="95" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Store_Cereri2_di" bpmnElement="Store_Cereri2"><dc:Bounds x="2945" y="315" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="2999" y="330" width="95" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Store_Bugete2_di" bpmnElement="Store_Bugete2"><dc:Bounds x="3095" y="315" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="3149" y="330" width="95" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Annotation_Aprobatori_di" bpmnElement="Annotation_Aprobatori"><dc:Bounds x="1580" y="302" width="360" height="76" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNEdge id="Flow_Start_Cerere_Task_Inregistrare_di" bpmnElement="Flow_Start_Cerere_Task_Inregistrare"><di:waypoint x="270" y="233" /><di:waypoint x="270" y="470" /><di:waypoint x="370" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_Inregistrare_Task_ANAF_di" bpmnElement="Flow_Task_Inregistrare_Task_ANAF"><di:waypoint x="470" y="470" /><di:waypoint x="520" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_ANAF_Task_BNR_di" bpmnElement="Flow_Task_ANAF_Task_BNR"><di:waypoint x="620" y="470" /><di:waypoint x="670" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_BNR_Task_VerificaBuget_di" bpmnElement="Flow_Task_BNR_Task_VerificaBuget"><di:waypoint x="770" y="470" /><di:waypoint x="820" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_VerificaBuget_Gateway_DateValide_di" bpmnElement="Flow_Task_VerificaBuget_Gateway_DateValide"><di:waypoint x="920" y="470" /><di:waypoint x="995" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_DateValide_Task_StatusInAprobare_di" bpmnElement="Flow_Gateway_DateValide_Task_StatusInAprobare"><di:waypoint x="1045" y="470" /><di:waypoint x="1120" y="470" /><bpmndi:BPMNLabel><dc:Bounds x="1051" y="452" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_DateValide_Task_RespinsaValidare_di" bpmnElement="Flow_Gateway_DateValide_Task_RespinsaValidare"><di:waypoint x="1020" y="495" /><di:waypoint x="1020" y="550" /><bpmndi:BPMNLabel><dc:Bounds x="1025" y="501" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_RespinsaValidare_Send_NotifRespValidare_di" bpmnElement="Flow_Task_RespinsaValidare_Send_NotifRespValidare"><di:waypoint x="1070" y="590" /><di:waypoint x="1120" y="590" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Send_NotifRespValidare_End_RespinsaValidare_di" bpmnElement="Flow_Send_NotifRespValidare_End_RespinsaValidare"><di:waypoint x="1220" y="590" /><di:waypoint x="1302" y="590" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_StatusInAprobare_Send_NotifInAprobare_di" bpmnElement="Flow_Task_StatusInAprobare_Send_NotifInAprobare"><di:waypoint x="1220" y="470" /><di:waypoint x="1270" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Send_NotifInAprobare_User_Aprobare1_di" bpmnElement="Flow_Send_NotifInAprobare_User_Aprobare1"><di:waypoint x="1370" y="470" /><di:waypoint x="1395" y="470" /><di:waypoint x="1395" y="725" /><di:waypoint x="1420" y="725" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_User_Aprobare1_Gateway_Aprobat1_di" bpmnElement="Flow_User_Aprobare1_Gateway_Aprobat1"><di:waypoint x="1520" y="725" /><di:waypoint x="1595" y="725" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_Aprobat1_User_Aprobare2_di" bpmnElement="Flow_Gateway_Aprobat1_User_Aprobare2"><di:waypoint x="1620" y="750" /><di:waypoint x="1620" y="855" /><di:waypoint x="1720" y="855" /><bpmndi:BPMNLabel><dc:Bounds x="1625" y="756" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_User_Aprobare2_Gateway_Aprobat2_di" bpmnElement="Flow_User_Aprobare2_Gateway_Aprobat2"><di:waypoint x="1820" y="855" /><di:waypoint x="1895" y="855" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_Aprobat2_User_Aprobare3_di" bpmnElement="Flow_Gateway_Aprobat2_User_Aprobare3"><di:waypoint x="1920" y="880" /><di:waypoint x="1920" y="985" /><di:waypoint x="2020" y="985" /><bpmndi:BPMNLabel><dc:Bounds x="1925" y="886" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_User_Aprobare3_Gateway_Aprobat3_di" bpmnElement="Flow_User_Aprobare3_Gateway_Aprobat3"><di:waypoint x="2120" y="985" /><di:waypoint x="2195" y="985" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_Aprobat3_Gateway_PesteBuget_di" bpmnElement="Flow_Gateway_Aprobat3_Gateway_PesteBuget"><di:waypoint x="2245" y="985" /><di:waypoint x="2295" y="985" /><di:waypoint x="2295" y="470" /><di:waypoint x="2345" y="470" /><bpmndi:BPMNLabel><dc:Bounds x="2251" y="967" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_PesteBuget_User_Aprobare4_di" bpmnElement="Flow_Gateway_PesteBuget_User_Aprobare4"><di:waypoint x="2370" y="495" /><di:waypoint x="2370" y="1115" /><di:waypoint x="2470" y="1115" /><bpmndi:BPMNLabel><dc:Bounds x="2375" y="501" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_PesteBuget_Gateway_MergeAprobat_di" bpmnElement="Flow_Gateway_PesteBuget_Gateway_MergeAprobat"><di:waypoint x="2395" y="470" /><di:waypoint x="2795" y="470" /><bpmndi:BPMNLabel><dc:Bounds x="2401" y="452" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_User_Aprobare4_Gateway_Aprobat4_di" bpmnElement="Flow_User_Aprobare4_Gateway_Aprobat4"><di:waypoint x="2570" y="1115" /><di:waypoint x="2645" y="1115" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_Aprobat4_Gateway_MergeAprobat_di" bpmnElement="Flow_Gateway_Aprobat4_Gateway_MergeAprobat"><di:waypoint x="2695" y="1115" /><di:waypoint x="2820" y="1115" /><di:waypoint x="2820" y="495" /><bpmndi:BPMNLabel><dc:Bounds x="2701" y="1097" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_Aprobat1_Gateway_MergeRespins_di" bpmnElement="Flow_Gateway_Aprobat1_Gateway_MergeRespins"><di:waypoint x="1620" y="700" /><di:waypoint x="1620" y="590" /><di:waypoint x="2945" y="590" /><bpmndi:BPMNLabel><dc:Bounds x="1625" y="678" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Timer_Aprobare1_Gateway_MergeRespins_di" bpmnElement="Flow_Timer_Aprobare1_Gateway_MergeRespins"><di:waypoint x="1495" y="667" /><di:waypoint x="1495" y="590" /><di:waypoint x="2945" y="590" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_Aprobat2_Gateway_MergeRespins_di" bpmnElement="Flow_Gateway_Aprobat2_Gateway_MergeRespins"><di:waypoint x="1920" y="830" /><di:waypoint x="1920" y="590" /><di:waypoint x="2945" y="590" /><bpmndi:BPMNLabel><dc:Bounds x="1925" y="808" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Timer_Aprobare2_Gateway_MergeRespins_di" bpmnElement="Flow_Timer_Aprobare2_Gateway_MergeRespins"><di:waypoint x="1795" y="797" /><di:waypoint x="1795" y="590" /><di:waypoint x="2945" y="590" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_Aprobat3_Gateway_MergeRespins_di" bpmnElement="Flow_Gateway_Aprobat3_Gateway_MergeRespins"><di:waypoint x="2220" y="960" /><di:waypoint x="2220" y="590" /><di:waypoint x="2945" y="590" /><bpmndi:BPMNLabel><dc:Bounds x="2225" y="938" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Timer_Aprobare3_Gateway_MergeRespins_di" bpmnElement="Flow_Timer_Aprobare3_Gateway_MergeRespins"><di:waypoint x="2095" y="927" /><di:waypoint x="2095" y="590" /><di:waypoint x="2945" y="590" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_Aprobat4_Gateway_MergeRespins_di" bpmnElement="Flow_Gateway_Aprobat4_Gateway_MergeRespins"><di:waypoint x="2670" y="1090" /><di:waypoint x="2670" y="590" /><di:waypoint x="2945" y="590" /><bpmndi:BPMNLabel><dc:Bounds x="2675" y="1068" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Timer_Aprobare4_Gateway_MergeRespins_di" bpmnElement="Flow_Timer_Aprobare4_Gateway_MergeRespins"><di:waypoint x="2545" y="1057" /><di:waypoint x="2545" y="590" /><di:waypoint x="2945" y="590" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_MergeAprobat_Task_StatusAprobata_di" bpmnElement="Flow_Gateway_MergeAprobat_Task_StatusAprobata"><di:waypoint x="2845" y="470" /><di:waypoint x="2920" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_StatusAprobata_Task_AngajeazaBuget_di" bpmnElement="Flow_Task_StatusAprobata_Task_AngajeazaBuget"><di:waypoint x="3020" y="470" /><di:waypoint x="3070" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_AngajeazaBuget_Send_NotifAprobare_di" bpmnElement="Flow_Task_AngajeazaBuget_Send_NotifAprobare"><di:waypoint x="3170" y="470" /><di:waypoint x="3220" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Send_NotifAprobare_End_Aprobata_di" bpmnElement="Flow_Send_NotifAprobare_End_Aprobata"><di:waypoint x="3320" y="470" /><di:waypoint x="3402" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_MergeRespins_Task_StatusRespinsa_di" bpmnElement="Flow_Gateway_MergeRespins_Task_StatusRespinsa"><di:waypoint x="2995" y="590" /><di:waypoint x="3070" y="590" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_StatusRespinsa_Send_NotifRespingere_di" bpmnElement="Flow_Task_StatusRespinsa_Send_NotifRespingere"><di:waypoint x="3170" y="590" /><di:waypoint x="3220" y="590" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Send_NotifRespingere_End_Respinsa_di" bpmnElement="Flow_Send_NotifRespingere_End_Respinsa"><di:waypoint x="3320" y="590" /><di:waypoint x="3402" y="590" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="MsgFlow_Task_ANAF_Participant_ANAF_di" bpmnElement="MsgFlow_Task_ANAF_Participant_ANAF"><di:waypoint x="555" y="430" /><di:waypoint x="555" y="100" /><bpmndi:BPMNLabel><dc:Bounds x="429" y="168" width="120" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="MsgFlow_Participant_ANAF_Task_ANAF_di" bpmnElement="MsgFlow_Participant_ANAF_Task_ANAF"><di:waypoint x="585" y="100" /><di:waypoint x="585" y="430" /><bpmndi:BPMNLabel><dc:Bounds x="429" y="234" width="120" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="MsgFlow_Task_BNR_Participant_BNR_di" bpmnElement="MsgFlow_Task_BNR_Participant_BNR"><di:waypoint x="705" y="430" /><di:waypoint x="705" y="100" /><bpmndi:BPMNLabel><dc:Bounds x="711" y="168" width="120" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="MsgFlow_Participant_BNR_Task_BNR_di" bpmnElement="MsgFlow_Participant_BNR_Task_BNR"><di:waypoint x="735" y="100" /><di:waypoint x="735" y="430" /><bpmndi:BPMNLabel><dc:Bounds x="741" y="234" width="120" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="DataOut_Task_Inregistrare_Store_Cereri1_di" bpmnElement="DataOut_Task_Inregistrare_Store_Cereri1"><di:waypoint x="420" y="430" /><di:waypoint x="420" y="365" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="DataIn_Store_Bugete1_Task_VerificaBuget_di" bpmnElement="DataIn_Store_Bugete1_Task_VerificaBuget"><di:waypoint x="870" y="365" /><di:waypoint x="870" y="430" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="DataOut_Task_StatusAprobata_Store_Cereri2_di" bpmnElement="DataOut_Task_StatusAprobata_Store_Cereri2"><di:waypoint x="2970" y="430" /><di:waypoint x="2970" y="365" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="DataOut_Task_AngajeazaBuget_Store_Bugete2_di" bpmnElement="DataOut_Task_AngajeazaBuget_Store_Bugete2"><di:waypoint x="3120" y="430" /><di:waypoint x="3120" y="365" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Assoc_Annotation_Aprobatori_User_Aprobare1_di" bpmnElement="Assoc_Annotation_Aprobatori_User_Aprobare1"><di:waypoint x="1610" y="378" /><di:waypoint x="1445" y="685" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

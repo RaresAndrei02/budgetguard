@@ -1,0 +1,291 @@
+{
+  "model": "openai/gpt-oss-120b",
+  "rounds": 5,
+  "calls": 25,
+  "valid_json": 25,
+  "alert_match": 25,
+  "accepted": true,
+  "results": [
+    {
+      "round": 1,
+      "cc": "IT",
+      "expected": "Verde",
+      "seconds": 2.6,
+      "tokens": 2085,
+      "valid": true,
+      "got": "Verde",
+      "notes": [
+        "diacritice cu sedilă"
+      ],
+      "match": true
+    },
+    {
+      "round": 1,
+      "cc": "MKT",
+      "expected": "Roșu",
+      "seconds": 2.7,
+      "tokens": 1994,
+      "valid": true,
+      "got": "Roșu",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 1,
+      "cc": "OPS",
+      "expected": "Galben",
+      "seconds": 2.7,
+      "tokens": 2098,
+      "valid": true,
+      "got": "Galben",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 1,
+      "cc": "HR",
+      "expected": "Galben",
+      "seconds": 1.8,
+      "tokens": 1744,
+      "valid": true,
+      "got": "Galben",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 1,
+      "cc": "SAL",
+      "expected": "Verde",
+      "seconds": 2.4,
+      "tokens": 1812,
+      "valid": true,
+      "got": "Verde",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 2,
+      "cc": "IT",
+      "expected": "Verde",
+      "seconds": 2.4,
+      "tokens": 2091,
+      "valid": true,
+      "got": "Verde",
+      "notes": [
+        "diacritice cu sedilă"
+      ],
+      "match": true
+    },
+    {
+      "round": 2,
+      "cc": "MKT",
+      "expected": "Roșu",
+      "seconds": 3.0,
+      "tokens": 1887,
+      "valid": true,
+      "got": "Roșu",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 2,
+      "cc": "OPS",
+      "expected": "Galben",
+      "seconds": 2.0,
+      "tokens": 1815,
+      "valid": true,
+      "got": "Galben",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 2,
+      "cc": "HR",
+      "expected": "Galben",
+      "seconds": 2.2,
+      "tokens": 2012,
+      "valid": true,
+      "got": "Galben",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 2,
+      "cc": "SAL",
+      "expected": "Verde",
+      "seconds": 1.9,
+      "tokens": 1740,
+      "valid": true,
+      "got": "Verde",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 3,
+      "cc": "IT",
+      "expected": "Verde",
+      "seconds": 2.6,
+      "tokens": 1948,
+      "valid": true,
+      "got": "Verde",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 3,
+      "cc": "MKT",
+      "expected": "Roșu",
+      "seconds": 2.8,
+      "tokens": 2871,
+      "valid": true,
+      "got": "Roșu",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 3,
+      "cc": "OPS",
+      "expected": "Galben",
+      "seconds": 2.0,
+      "tokens": 1876,
+      "valid": true,
+      "got": "Galben",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 3,
+      "cc": "HR",
+      "expected": "Galben",
+      "seconds": 2.5,
+      "tokens": 2015,
+      "valid": true,
+      "got": "Galben",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 3,
+      "cc": "SAL",
+      "expected": "Verde",
+      "seconds": 1.7,
+      "tokens": 1609,
+      "valid": true,
+      "got": "Verde",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 4,
+      "cc": "IT",
+      "expected": "Verde",
+      "seconds": 2.9,
+      "tokens": 2108,
+      "valid": true,
+      "got": "Verde",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 4,
+      "cc": "MKT",
+      "expected": "Roșu",
+      "seconds": 1.5,
+      "tokens": 1711,
+      "valid": true,
+      "got": "Roșu",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 4,
+      "cc": "OPS",
+      "expected": "Galben",
+      "seconds": 1.5,
+      "tokens": 1699,
+      "valid": true,
+      "got": "Galben",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 4,
+      "cc": "HR",
+      "expected": "Galben",
+      "seconds": 2.1,
+      "tokens": 2027,
+      "valid": true,
+      "got": "Galben",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 4,
+      "cc": "SAL",
+      "expected": "Verde",
+      "seconds": 2.2,
+      "tokens": 1849,
+      "valid": true,
+      "got": "Verde",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 5,
+      "cc": "IT",
+      "expected": "Verde",
+      "seconds": 3.4,
+      "tokens": 2123,
+      "valid": true,
+      "got": "Verde",
+      "notes": [
+        "diacritice cu sedilă"
+      ],
+      "match": true
+    },
+    {
+      "round": 5,
+      "cc": "MKT",
+      "expected": "Roșu",
+      "seconds": 2.2,
+      "tokens": 1936,
+      "valid": true,
+      "got": "Roșu",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 5,
+      "cc": "OPS",
+      "expected": "Galben",
+      "seconds": 2.3,
+      "tokens": 1936,
+      "valid": true,
+      "got": "Galben",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 5,
+      "cc": "HR",
+      "expected": "Galben",
+      "seconds": 2.2,
+      "tokens": 1825,
+      "valid": true,
+      "got": "Galben",
+      "notes": [],
+      "match": true
+    },
+    {
+      "round": 5,
+      "cc": "SAL",
+      "expected": "Verde",
+      "seconds": 1.8,
+      "tokens": 1728,
+      "valid": true,
+      "got": "Verde",
+      "notes": [],
+      "match": true
+    }
+  ]
+}

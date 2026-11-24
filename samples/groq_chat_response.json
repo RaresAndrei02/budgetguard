@@ -1,0 +1,37 @@
+{
+  "id": "chatcmpl-16f0a6df-f0c3-4245-992b-949826c9d2fd",
+  "object": "chat.completion",
+  "created": 1795096771,
+  "model": "openai/gpt-oss-120b",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "{\"comentariu\":\"Depășire buget de 18% (realizat 118000 RON vs buget 100000 RON)\",\"nivel_alerta\":\"Roșu\"}",
+        "reasoning": "The user gave a JSON with cost center IT, budget 100k, realized 118k. The developer instruction: respond exclusively with a JSON object with keys: comentariu (string), nivel_alerta (Verde|Galben|Roșu). Need to compute comment and alert level based on overbudget? Likely if realized > budget, it's over. 118k vs 100k = 18% over. Probably alert red. Provide comment in Romanian: \"Depășire buget de 18%\". Alert: \"Roșu\". Must be compact JSON. Provide only JSON."
+      },
+      "logprobs": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "queue_time": 0.211828158,
+    "prompt_tokens": 165,
+    "prompt_time": 0.006587958,
+    "completion_tokens": 174,
+    "completion_time": 0.375099265,
+    "total_tokens": 339,
+    "total_time": 0.381687223,
+    "completion_tokens_details": {
+      "reasoning_tokens": 125
+    }
+  },
+  "usage_breakdown": null,
+  "system_fingerprint": "fp_8655ddce88",
+  "x_groq": {
+    "id": "req_01m7t1nyc7egssbp4pdd4qpxap",
+    "seed": 1780326486
+  },
+  "service_tier": "on_demand"
+}

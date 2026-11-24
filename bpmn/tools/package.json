@@ -1,0 +1,11 @@
+{
+  "name": "budgetguard-bpmn-tools",
+  "private": true,
+  "type": "module",
+  "description": "Validate and render the BudgetGuard BPMN diagrams with bpmn-js (same library as demo.bpmn.io).",
+  "scripts": { "render": "node render.mjs" },
+  "dependencies": {
+    "bpmn-js": "17.11.1",
+    "puppeteer-core": "23.11.1"
+  }
+}

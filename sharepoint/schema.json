@@ -1,0 +1,148 @@
+{
+  "$comment": "BudgetGuard SharePoint schema (documented in docs/sharepoint_schema.md). Internal names have no diacritics/spaces. Title is the key column, shown under 'title_display'.",
+  "lists": [
+    {
+      "title": "Config",
+      "title_display": "Cheie",
+      "unique_title": true,
+      "description": "Parametri de configurare (praguri, aprobatori, mod demo).",
+      "fields": [
+        { "name": "Valoare", "type": "Text" }
+      ]
+    },
+    {
+      "title": "Nomenclator",
+      "title_display": "Cod",
+      "unique_title": false,
+      "description": "Coduri centre de cost (CC) și categorii (CAT). Codul MKT apare la ambele tipuri.",
+      "fields": [
+        { "name": "Tip", "type": "Choice", "choices": ["CC", "CAT"] },
+        { "name": "Denumire", "type": "Text" }
+      ]
+    },
+    {
+      "title": "Bugete",
+      "title_display": "Cheie",
+      "unique_title": true,
+      "description": "Buget lunar pe {yyyy-MM}_{CC}_{CAT}.",
+      "fields": [
+        { "name": "Luna", "type": "Text" },
+        { "name": "CentruCost", "type": "Text" },
+        { "name": "Categorie", "type": "Text" },
+        { "name": "Buget_RON", "type": "Number" },
+        { "name": "Angajat_RON", "type": "Number" },
+        { "name": "Realizat_RON", "type": "Number" },
+        { "name": "Ramas_RON", "type": "Number" }
+      ]
+    },
+    {
+      "title": "Cereri_Achizitie",
+      "title_display": "ID_Cerere",
+      "unique_title": false,
+      "description": "Cererile de achiziție (Flux 1).",
+      "fields": [
+        { "name": "TitluCerere", "type": "Text" },
+        { "name": "CentruCost", "type": "Text" },
+        { "name": "Categorie", "type": "Text" },
+        { "name": "Luna_Buget", "type": "Text" },
+        { "name": "CUI", "type": "Text" },
+        { "name": "Furnizor_ANAF", "type": "Text" },
+        { "name": "Platitor_TVA", "type": "Boolean" },
+        { "name": "Valoare", "type": "Number" },
+        { "name": "Moneda", "type": "Choice", "choices": ["RON", "EUR", "USD"], "default": "RON" },
+        { "name": "Curs_BNR", "type": "Number", "decimals": 4 },
+        { "name": "Valoare_RON", "type": "Number" },
+        { "name": "Tip", "type": "Choice", "choices": ["CAPEX", "OPEX"] },
+        { "name": "Data_Necesara", "type": "DateTime", "date_only": true },
+        { "name": "Recurenta", "type": "Boolean" },
+        { "name": "Urgenta", "type": "Number", "decimals": 0 },
+        { "name": "Justificare", "type": "Note" },
+        { "name": "Peste_Buget", "type": "Boolean" },
+        { "name": "Avertismente", "type": "Note" },
+        { "name": "Status", "type": "Choice", "choices": ["Nouă", "În aprobare", "Aprobată", "Respinsă", "Exportată"], "default": "Nouă" },
+        { "name": "Solicitant_Email", "type": "Text" },
+        { "name": "Data_Cerere", "type": "DateTime" },
+        { "name": "Aprobari", "type": "Note" },
+        { "name": "Motiv_Respingere", "type": "Note" },
+        { "name": "Data_Finalizare", "type": "DateTime" }
+      ]
+    },
+    {
+      "title": "Istoric_Stari",
+      "title_display": "Referinta",
+      "unique_title": false,
+      "description": "Jurnalul tranzițiilor de stare (ID_Cerere sau Rulare_ID).",
+      "fields": [
+        { "name": "Flux", "type": "Choice", "choices": ["F1", "F2", "EXPORT"] },
+        { "name": "Stare_Veche", "type": "Text" },
+        { "name": "Stare_Noua", "type": "Text" },
+        { "name": "Actor", "type": "Text" },
+        { "name": "Data_Ora", "type": "DateTime" },
+        { "name": "Comentariu", "type": "Note" }
+      ]
+    },
+    {
+      "title": "Realizat_Lunar",
+      "title_display": "Cheie",
+      "unique_title": true,
+      "description": "Cheltuieli realizate importate (Flux 2), upsert pe cheie.",
+      "fields": [
+        { "name": "Luna", "type": "Text" },
+        { "name": "CentruCost", "type": "Text" },
+        { "name": "Categorie", "type": "Text" },
+        { "name": "Suma", "type": "Number" },
+        { "name": "Moneda", "type": "Text" },
+        { "name": "Suma_RON", "type": "Number" },
+        { "name": "Nr_Documente", "type": "Number", "decimals": 0 },
+        { "name": "Aprobat_RON", "type": "Number" },
+        { "name": "Maverick_RON", "type": "Number" },
+        { "name": "Sursa_Fisier", "type": "Text" },
+        { "name": "Rulare_ID", "type": "Text" },
+        { "name": "Data_Import", "type": "DateTime" }
+      ]
+    },
+    {
+      "title": "Analize_AI",
+      "title_display": "Cheie",
+      "unique_title": false,
+      "description": "Analiza pe centru de cost și lună ({Luna}_{CC}).",
+      "fields": [
+        { "name": "Luna", "type": "Text" },
+        { "name": "CentruCost", "type": "Text" },
+        { "name": "Buget_RON", "type": "Number" },
+        { "name": "Angajat_RON", "type": "Number" },
+        { "name": "Realizat_RON", "type": "Number" },
+        { "name": "Varianta_RON", "type": "Number" },
+        { "name": "Varianta_Pct", "type": "Number" },
+        { "name": "Maverick_RON", "type": "Number" },
+        { "name": "Alerta_Regula", "type": "Choice", "choices": ["Verde", "Galben", "Roșu"] },
+        { "name": "Alerta_AI", "type": "Choice", "choices": ["Verde", "Galben", "Roșu"] },
+        { "name": "Necesita_Revizuire", "type": "Boolean" },
+        { "name": "Comentariu_AI", "type": "Note" },
+        { "name": "Cauze", "type": "Note" },
+        { "name": "Actiune", "type": "Note" },
+        { "name": "Status_Analiza", "type": "Choice", "choices": ["OK", "Eșuată"] },
+        { "name": "Mesaj_Eroare", "type": "Note" },
+        { "name": "Rulare_ID", "type": "Text" }
+      ]
+    },
+    {
+      "title": "Erori_Import",
+      "title_display": "Rulare_ID",
+      "unique_title": false,
+      "description": "Rândurile respinse la import (Flux 2).",
+      "fields": [
+        { "name": "Fisier", "type": "Text" },
+        { "name": "Rand", "type": "Number", "decimals": 0 },
+        { "name": "Cheie", "type": "Text" },
+        { "name": "Tip_Eroare", "type": "Choice", "choices": ["Câmp lipsă", "Tip invalid", "Valoare în afara domeniului", "Format lună", "Cod necunoscut", "Duplicat"] },
+        { "name": "Mesaj", "type": "Note" },
+        { "name": "Data_Import", "type": "DateTime" }
+      ]
+    }
+  ],
+  "libraries": [
+    { "title": "Import_Realizat", "description": "Fișierele JSON de import (Flux 2).", "folders": ["Procesate"] },
+    { "title": "Exporturi", "description": "Exporturile CSV/JSON (BG_Export).", "folders": [] }
+  ]
+}

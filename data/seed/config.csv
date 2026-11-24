@@ -1,0 +1,17 @@
+﻿Title,Valoare
+mod_demo,false
+aprobator_1,COMPLETEAZA_EMAIL_ASE
+aprobator_2,COMPLETEAZA_EMAIL_ASE
+aprobator_3,COMPLETEAZA_EMAIL_ASE
+aprobator_cfo,COMPLETEAZA_EMAIL_ASE
+email_bcc,bcc@example.com
+email_echipa,COMPLETEAZA_EMAIL_ASE
+prag_cfo_ron,100000
+prag_capex_ron,2500
+prag_alerta_pct,10
+valoare_max_ron,500000
+zile_min_avans,5
+teams_team_id,COMPLETEAZA_IN_FAZA_4
+teams_channel_id,COMPLETEAZA_IN_FAZA_4
+curs_fallback_EUR,5.3459
+curs_fallback_USD,4.8725

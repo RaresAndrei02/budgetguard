@@ -1,0 +1,44 @@
+{
+  "luna": "2026-10",
+  "centru_cost": "HR",
+  "buget_ron": 50000.0,
+  "angajat_ron": 39350.0,
+  "realizat_ron": 50594.0,
+  "varianta_ron": 594.0,
+  "varianta_pct": 1.19,
+  "maverick_ron": 12348.0,
+  "praguri": {
+    "verde_max_pct": 5,
+    "galben_max_pct": 10.0
+  },
+  "categorii": [
+    {
+      "categorie": "TRN",
+      "buget": 12000.0,
+      "angajat": 0.0,
+      "realizat": 12348.0,
+      "maverick": 12348.0
+    },
+    {
+      "categorie": "SRV",
+      "buget": 20000.0,
+      "angajat": 21400.0,
+      "realizat": 20600.0,
+      "maverick": 0.0
+    },
+    {
+      "categorie": "SW",
+      "buget": 12000.0,
+      "angajat": 11650.0,
+      "realizat": 11496.0,
+      "maverick": 0.0
+    },
+    {
+      "categorie": "BIR",
+      "buget": 6000.0,
+      "angajat": 6300.0,
+      "realizat": 6150.0,
+      "maverick": 0.0
+    }
+  ]
+}

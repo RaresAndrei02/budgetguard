@@ -1,0 +1,533 @@
+{
+  "fisier": "realizat_2026-10.json",
+  "luna": "2026-10",
+  "cursuri": {
+    "data": "2026-11-18",
+    "RON": 1.0,
+    "EUR": 5.3459,
+    "USD": 4.8725
+  },
+  "sumar": {
+    "total": 24,
+    "valide": 20,
+    "invalide": 3,
+    "duplicate": 1,
+    "erori_pe_tip": {
+      "Cod necunoscut": 1,
+      "Valoare în afara domeniului": 1,
+      "Format lună": 1,
+      "Duplicat": 1
+    }
+  },
+  "erori": [
+    {
+      "rand": 9,
+      "cheie": "2026-10_LOG_SRV",
+      "tip": "Cod necunoscut",
+      "mesaj": "Rândul 9 (2026-10_LOG_SRV): centrul de cost „LOG” nu există în nomenclator. Coduri valide: IT, MKT, OPS, HR, SAL."
+    },
+    {
+      "rand": 14,
+      "cheie": "2026-10_OPS_BIR",
+      "tip": "Valoare în afara domeniului",
+      "mesaj": "Rândul 14 (2026-10_OPS_BIR): suma -1500 nu este validă; se acceptă doar valori mai mari decât 0."
+    },
+    {
+      "rand": 17,
+      "cheie": "",
+      "tip": "Format lună",
+      "mesaj": "Rândul 17: luna „10/2026” are format greșit; formatul corect este AAAA-LL (ex. 2026-10)."
+    },
+    {
+      "rand": 22,
+      "cheie": "2026-10_IT_SW",
+      "tip": "Duplicat",
+      "mesaj": "Rândul 22 (2026-10_IT_SW): înregistrare duplicat — cheia a apărut deja la rândul 1; rândul a fost ignorat."
+    }
+  ],
+  "realizat": [
+    {
+      "rand": 1,
+      "cheie": "2026-10_IT_SW",
+      "luna": "2026-10",
+      "cc": "IT",
+      "cat": "SW",
+      "suma": 51750.0,
+      "moneda": "RON",
+      "suma_ron": 51750.0,
+      "nr_documente": 8,
+      "aprobat_ron": 52300.01,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 2,
+      "cheie": "2026-10_IT_HW",
+      "luna": "2026-10",
+      "cc": "IT",
+      "cat": "HW",
+      "suma": 45000.0,
+      "moneda": "RON",
+      "suma_ron": 45000.0,
+      "nr_documente": 10,
+      "aprobat_ron": 45250.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 3,
+      "cheie": "2026-10_MKT_SRV",
+      "luna": "2026-10",
+      "cc": "MKT",
+      "cat": "SRV",
+      "suma": 26250.0,
+      "moneda": "RON",
+      "suma_ron": 26250.0,
+      "nr_documente": 4,
+      "aprobat_ron": 26350.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 4,
+      "cheie": "2026-10_MKT_TRN",
+      "luna": "2026-10",
+      "cc": "MKT",
+      "cat": "TRN",
+      "suma": 7600.0,
+      "moneda": "RON",
+      "suma_ron": 7600.0,
+      "nr_documente": 7,
+      "aprobat_ron": 7950.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 5,
+      "cheie": "2026-10_OPS_SRV",
+      "luna": "2026-10",
+      "cc": "OPS",
+      "cat": "SRV",
+      "suma": 54000.0,
+      "moneda": "RON",
+      "suma_ron": 54000.0,
+      "nr_documente": 7,
+      "aprobat_ron": 54400.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 6,
+      "cheie": "2026-10_OPS_BIR",
+      "luna": "2026-10",
+      "cc": "OPS",
+      "cat": "BIR",
+      "suma": 12720.0,
+      "moneda": "RON",
+      "suma_ron": 12720.0,
+      "nr_documente": 10,
+      "aprobat_ron": 13100.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 7,
+      "cheie": "2026-10_IT_TRN",
+      "luna": "2026-10",
+      "cc": "IT",
+      "cat": "TRN",
+      "suma": 10500.0,
+      "moneda": "RON",
+      "suma_ron": 10500.0,
+      "nr_documente": 12,
+      "aprobat_ron": 11150.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 8,
+      "cheie": "2026-10_SAL_TRN",
+      "luna": "2026-10",
+      "cc": "SAL",
+      "cat": "TRN",
+      "suma": 14400.0,
+      "moneda": "RON",
+      "suma_ron": 14400.0,
+      "nr_documente": 11,
+      "aprobat_ron": 14700.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 10,
+      "cheie": "2026-10_IT_SRV",
+      "luna": "2026-10",
+      "cc": "IT",
+      "cat": "SRV",
+      "suma": 6649.56,
+      "moneda": "USD",
+      "suma_ron": 32399.98,
+      "nr_documente": 9,
+      "aprobat_ron": 32800.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 11,
+      "cheie": "2026-10_HR_BIR",
+      "luna": "2026-10",
+      "cc": "HR",
+      "cat": "BIR",
+      "suma": 6150.0,
+      "moneda": "RON",
+      "suma_ron": 6150.0,
+      "nr_documente": 1,
+      "aprobat_ron": 6300.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 12,
+      "cheie": "2026-10_OPS_HW",
+      "luna": "2026-10",
+      "cc": "OPS",
+      "cat": "HW",
+      "suma": 7005.37,
+      "moneda": "EUR",
+      "suma_ron": 37450.01,
+      "nr_documente": 9,
+      "aprobat_ron": 39050.04,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 13,
+      "cheie": "2026-10_MKT_MKT",
+      "luna": "2026-10",
+      "cc": "MKT",
+      "cat": "MKT",
+      "suma": 94400.0,
+      "moneda": "RON",
+      "suma_ron": 94400.0,
+      "nr_documente": 6,
+      "aprobat_ron": 99050.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 15,
+      "cheie": "2026-10_SAL_BIR",
+      "luna": "2026-10",
+      "cc": "SAL",
+      "cat": "BIR",
+      "suma": 8000.0,
+      "moneda": "RON",
+      "suma_ron": 8000.0,
+      "nr_documente": 5,
+      "aprobat_ron": 8450.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 16,
+      "cheie": "2026-10_HR_TRN",
+      "luna": "2026-10",
+      "cc": "HR",
+      "cat": "TRN",
+      "suma": 12348.0,
+      "moneda": "RON",
+      "suma_ron": 12348.0,
+      "nr_documente": 8,
+      "aprobat_ron": 0.0,
+      "maverick_ron": 12348.0
+    },
+    {
+      "rand": 18,
+      "cheie": "2026-10_HR_SRV",
+      "luna": "2026-10",
+      "cc": "HR",
+      "cat": "SRV",
+      "suma": 20600.0,
+      "moneda": "RON",
+      "suma_ron": 20600.0,
+      "nr_documente": 4,
+      "aprobat_ron": 21400.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 19,
+      "cheie": "2026-10_SAL_MKT",
+      "luna": "2026-10",
+      "cc": "SAL",
+      "cat": "MKT",
+      "suma": 30600.0,
+      "moneda": "RON",
+      "suma_ron": 30600.0,
+      "nr_documente": 12,
+      "aprobat_ron": 32000.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 20,
+      "cheie": "2026-10_MKT_SW",
+      "luna": "2026-10",
+      "cc": "MKT",
+      "cat": "SW",
+      "suma": 2805.89,
+      "moneda": "EUR",
+      "suma_ron": 15000.01,
+      "nr_documente": 12,
+      "aprobat_ron": 15250.04,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 21,
+      "cheie": "2026-10_HR_SW",
+      "luna": "2026-10",
+      "cc": "HR",
+      "cat": "SW",
+      "suma": 11496.0,
+      "moneda": "RON",
+      "suma_ron": 11496.0,
+      "nr_documente": 12,
+      "aprobat_ron": 11650.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 23,
+      "cheie": "2026-10_OPS_TRN",
+      "luna": "2026-10",
+      "cc": "OPS",
+      "cat": "TRN",
+      "suma": 9450.0,
+      "moneda": "RON",
+      "suma_ron": 9450.0,
+      "nr_documente": 3,
+      "aprobat_ron": 9600.0,
+      "maverick_ron": 0.0
+    },
+    {
+      "rand": 24,
+      "cheie": "2026-10_SAL_SW",
+      "luna": "2026-10",
+      "cc": "SAL",
+      "cat": "SW",
+      "suma": 3400.74,
+      "moneda": "EUR",
+      "suma_ron": 18180.02,
+      "nr_documente": 10,
+      "aprobat_ron": 18450.0,
+      "maverick_ron": 0.0
+    }
+  ],
+  "maverick": [
+    {
+      "cheie": "2026-10_HR_TRN",
+      "maverick_ron": 12348.0
+    }
+  ],
+  "centre_cost": [
+    {
+      "cc": "IT",
+      "luna": "2026-10",
+      "buget_ron": 145000.0,
+      "angajat_ron": 141500.01,
+      "realizat_ron": 139649.98,
+      "varianta_ron": -5350.02,
+      "varianta_pct": -3.69,
+      "maverick_ron": 0.0,
+      "alerta_regula": "Verde",
+      "alerta_ai_asteptata": "Verde",
+      "necesita_revizuire_asteptat": false,
+      "categorii": [
+        {
+          "categorie": "HW",
+          "buget": 60000.0,
+          "angajat": 45250.0,
+          "realizat": 45000.0,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "SW",
+          "buget": 45000.0,
+          "angajat": 52300.01,
+          "realizat": 51750.0,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "SRV",
+          "buget": 30000.0,
+          "angajat": 32800.0,
+          "realizat": 32399.98,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "TRN",
+          "buget": 10000.0,
+          "angajat": 11150.0,
+          "realizat": 10500.0,
+          "maverick": 0.0
+        }
+      ]
+    },
+    {
+      "cc": "MKT",
+      "luna": "2026-10",
+      "buget_ron": 128000.0,
+      "angajat_ron": 148600.04,
+      "realizat_ron": 143250.01,
+      "varianta_ron": 15250.01,
+      "varianta_pct": 11.91,
+      "maverick_ron": 0.0,
+      "alerta_regula": "Roșu",
+      "alerta_ai_asteptata": "Roșu",
+      "necesita_revizuire_asteptat": false,
+      "categorii": [
+        {
+          "categorie": "MKT",
+          "buget": 80000.0,
+          "angajat": 99050.0,
+          "realizat": 94400.0,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "SRV",
+          "buget": 25000.0,
+          "angajat": 26350.0,
+          "realizat": 26250.0,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "SW",
+          "buget": 15000.0,
+          "angajat": 15250.04,
+          "realizat": 15000.01,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "TRN",
+          "buget": 8000.0,
+          "angajat": 7950.0,
+          "realizat": 7600.0,
+          "maverick": 0.0
+        }
+      ]
+    },
+    {
+      "cc": "OPS",
+      "luna": "2026-10",
+      "buget_ron": 106000.0,
+      "angajat_ron": 116150.04,
+      "realizat_ron": 113620.01,
+      "varianta_ron": 7620.01,
+      "varianta_pct": 7.19,
+      "maverick_ron": 0.0,
+      "alerta_regula": "Galben",
+      "alerta_ai_asteptata": "Galben",
+      "necesita_revizuire_asteptat": false,
+      "categorii": [
+        {
+          "categorie": "HW",
+          "buget": 35000.0,
+          "angajat": 39050.04,
+          "realizat": 37450.01,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "SRV",
+          "buget": 50000.0,
+          "angajat": 54400.0,
+          "realizat": 54000.0,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "BIR",
+          "buget": 12000.0,
+          "angajat": 13100.0,
+          "realizat": 12720.0,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "TRN",
+          "buget": 9000.0,
+          "angajat": 9600.0,
+          "realizat": 9450.0,
+          "maverick": 0.0
+        }
+      ]
+    },
+    {
+      "cc": "HR",
+      "luna": "2026-10",
+      "buget_ron": 50000.0,
+      "angajat_ron": 39350.0,
+      "realizat_ron": 50594.0,
+      "varianta_ron": 594.0,
+      "varianta_pct": 1.19,
+      "maverick_ron": 12348.0,
+      "alerta_regula": "Verde",
+      "alerta_ai_asteptata": "Galben",
+      "necesita_revizuire_asteptat": true,
+      "categorii": [
+        {
+          "categorie": "TRN",
+          "buget": 12000.0,
+          "angajat": 0.0,
+          "realizat": 12348.0,
+          "maverick": 12348.0
+        },
+        {
+          "categorie": "SRV",
+          "buget": 20000.0,
+          "angajat": 21400.0,
+          "realizat": 20600.0,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "SW",
+          "buget": 12000.0,
+          "angajat": 11650.0,
+          "realizat": 11496.0,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "BIR",
+          "buget": 6000.0,
+          "angajat": 6300.0,
+          "realizat": 6150.0,
+          "maverick": 0.0
+        }
+      ]
+    },
+    {
+      "cc": "SAL",
+      "luna": "2026-10",
+      "buget_ron": 71000.0,
+      "angajat_ron": 73600.0,
+      "realizat_ron": 71180.02,
+      "varianta_ron": 180.02,
+      "varianta_pct": 0.25,
+      "maverick_ron": 0.0,
+      "alerta_regula": "Verde",
+      "alerta_ai_asteptata": "Verde",
+      "necesita_revizuire_asteptat": false,
+      "categorii": [
+        {
+          "categorie": "MKT",
+          "buget": 30000.0,
+          "angajat": 32000.0,
+          "realizat": 30600.0,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "TRN",
+          "buget": 15000.0,
+          "angajat": 14700.0,
+          "realizat": 14400.0,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "BIR",
+          "buget": 8000.0,
+          "angajat": 8450.0,
+          "realizat": 8000.0,
+          "maverick": 0.0
+        },
+        {
+          "categorie": "SW",
+          "buget": 18000.0,
+          "angajat": 18450.0,
+          "realizat": 18180.02,
+          "maverick": 0.0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,223 @@
+{
+  "sursa": "ERP Vestra – export cheltuieli realizate",
+  "luna": "2026-10",
+  "generat_la": "2026-11-03T08:15:00",
+  "inregistrari": [
+    {
+      "rand": 1,
+      "luna": "2026-10",
+      "centru_cost": "IT",
+      "categorie": "SW",
+      "suma": 51750.0,
+      "moneda": "RON",
+      "nr_documente": 8
+    },
+    {
+      "rand": 2,
+      "luna": "2026-10",
+      "centru_cost": "IT",
+      "categorie": "HW",
+      "suma": 45000.0,
+      "moneda": "RON",
+      "nr_documente": 10
+    },
+    {
+      "rand": 3,
+      "luna": "2026-10",
+      "centru_cost": "MKT",
+      "categorie": "SRV",
+      "suma": 26250.0,
+      "moneda": "RON",
+      "nr_documente": 4
+    },
+    {
+      "rand": 4,
+      "luna": "2026-10",
+      "centru_cost": "MKT",
+      "categorie": "TRN",
+      "suma": 7600.0,
+      "moneda": "RON",
+      "nr_documente": 7
+    },
+    {
+      "rand": 5,
+      "luna": "2026-10",
+      "centru_cost": "OPS",
+      "categorie": "SRV",
+      "suma": 54000.0,
+      "moneda": "RON",
+      "nr_documente": 7
+    },
+    {
+      "rand": 6,
+      "luna": "2026-10",
+      "centru_cost": "OPS",
+      "categorie": "BIR",
+      "suma": 12720.0,
+      "moneda": "RON",
+      "nr_documente": 10
+    },
+    {
+      "rand": 7,
+      "luna": "2026-10",
+      "centru_cost": "IT",
+      "categorie": "TRN",
+      "suma": 10500.0,
+      "moneda": "RON",
+      "nr_documente": 12
+    },
+    {
+      "rand": 8,
+      "luna": "2026-10",
+      "centru_cost": "SAL",
+      "categorie": "TRN",
+      "suma": 14400.0,
+      "moneda": "RON",
+      "nr_documente": 11
+    },
+    {
+      "rand": 9,
+      "luna": "2026-10",
+      "centru_cost": "LOG",
+      "categorie": "SRV",
+      "suma": 8700.0,
+      "moneda": "RON",
+      "nr_documente": 3
+    },
+    {
+      "rand": 10,
+      "luna": "2026-10",
+      "centru_cost": "IT",
+      "categorie": "SRV",
+      "suma": 6649.56,
+      "moneda": "USD",
+      "nr_documente": 9
+    },
+    {
+      "rand": 11,
+      "luna": "2026-10",
+      "centru_cost": "HR",
+      "categorie": "BIR",
+      "suma": 6150.0,
+      "moneda": "RON",
+      "nr_documente": 1
+    },
+    {
+      "rand": 12,
+      "luna": "2026-10",
+      "centru_cost": "OPS",
+      "categorie": "HW",
+      "suma": 7005.37,
+      "moneda": "EUR",
+      "nr_documente": 9
+    },
+    {
+      "rand": 13,
+      "luna": "2026-10",
+      "centru_cost": "MKT",
+      "categorie": "MKT",
+      "suma": 94400.0,
+      "moneda": "RON",
+      "nr_documente": 6
+    },
+    {
+      "rand": 14,
+      "luna": "2026-10",
+      "centru_cost": "OPS",
+      "categorie": "BIR",
+      "suma": -1500,
+      "moneda": "RON",
+      "nr_documente": 1
+    },
+    {
+      "rand": 15,
+      "luna": "2026-10",
+      "centru_cost": "SAL",
+      "categorie": "BIR",
+      "suma": 8000.0,
+      "moneda": "RON",
+      "nr_documente": 5
+    },
+    {
+      "rand": 16,
+      "luna": "2026-10",
+      "centru_cost": "HR",
+      "categorie": "TRN",
+      "suma": 12348.0,
+      "moneda": "RON",
+      "nr_documente": 8
+    },
+    {
+      "rand": 17,
+      "luna": "10/2026",
+      "centru_cost": "SAL",
+      "categorie": "BIR",
+      "suma": 2300.0,
+      "moneda": "RON",
+      "nr_documente": 2
+    },
+    {
+      "rand": 18,
+      "luna": "2026-10",
+      "centru_cost": "HR",
+      "categorie": "SRV",
+      "suma": 20600.0,
+      "moneda": "RON",
+      "nr_documente": 4
+    },
+    {
+      "rand": 19,
+      "luna": "2026-10",
+      "centru_cost": "SAL",
+      "categorie": "MKT",
+      "suma": 30600.0,
+      "moneda": "RON",
+      "nr_documente": 12
+    },
+    {
+      "rand": 20,
+      "luna": "2026-10",
+      "centru_cost": "MKT",
+      "categorie": "SW",
+      "suma": 2805.89,
+      "moneda": "EUR",
+      "nr_documente": 12
+    },
+    {
+      "rand": 21,
+      "luna": "2026-10",
+      "centru_cost": "HR",
+      "categorie": "SW",
+      "suma": 11496.0,
+      "moneda": "RON",
+      "nr_documente": 12
+    },
+    {
+      "rand": 22,
+      "luna": "2026-10",
+      "centru_cost": "IT",
+      "categorie": "SW",
+      "suma": 19900.0,
+      "moneda": "RON",
+      "nr_documente": 4
+    },
+    {
+      "rand": 23,
+      "luna": "2026-10",
+      "centru_cost": "OPS",
+      "categorie": "TRN",
+      "suma": 9450.0,
+      "moneda": "RON",
+      "nr_documente": 3
+    },
+    {
+      "rand": 24,
+      "luna": "2026-10",
+      "centru_cost": "SAL",
+      "categorie": "SW",
+      "suma": 3400.74,
+      "moneda": "EUR",
+      "nr_documente": 10
+    }
+  ]
+}

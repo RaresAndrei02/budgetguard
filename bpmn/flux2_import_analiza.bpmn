@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_Flux2" targetNamespace="http://bpmn.io/schema/bpmn" exporter="BudgetGuard build_bpmn.py" exporterVersion="1.0">
+  <bpmn:collaboration id="Collaboration_Definitions_Flux2">
+    <bpmn:participant id="Participant_BudgetGuard2" name="Vestra Retail SRL - BudgetGuard (Flux 2: import realizat si analiza AI)" processRef="Process_Flux2" />
+    <bpmn:participant id="Participant_BNR2" name="BNR - curs valutar zilnic" />
+    <bpmn:participant id="Participant_Groq" name="Groq AI - chat completions (gpt-oss-120b)" />
+    <bpmn:messageFlow id="MsgFlow_Task_Referinte_Participant_BNR2" name="GET curs" sourceRef="Task_Referinte" targetRef="Participant_BNR2" />
+    <bpmn:messageFlow id="MsgFlow_Participant_BNR2_Task_Referinte" name="curs EUR / USD" sourceRef="Participant_BNR2" targetRef="Task_Referinte" />
+    <bpmn:messageFlow id="MsgFlow_SA_AnalizaAI_Participant_Groq" name="prompt + date CC" sourceRef="SA_AnalizaAI" targetRef="Participant_Groq" />
+    <bpmn:messageFlow id="MsgFlow_Participant_Groq_SA_AnalizaAI" name="JSON analiza" sourceRef="Participant_Groq" targetRef="SA_AnalizaAI" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Flux2" isExecutable="false">
+    <bpmn:startEvent id="Start_FisierNou" name="Fisier JSON nou in Import_Realizat">
+      <bpmn:outgoing>Flow_Start_FisierNou_Task_CitesteFisier</bpmn:outgoing>
+      <bpmn:conditionalEventDefinition id="ConditionalEventDefinition_Fisier"><bpmn:condition xsi:type="bpmn:tFormalExpression">fisier nou *.json in biblioteca Import_Realizat</bpmn:condition></bpmn:conditionalEventDefinition>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_CitesteFisier" name="Citeste si parseaza fisierul JSON">
+      <bpmn:incoming>Flow_Start_FisierNou_Task_CitesteFisier</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_CitesteFisier_Gateway_Lizibil</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_Lizibil" name="Fisier lizibil?">
+      <bpmn:incoming>Flow_Task_CitesteFisier_Gateway_Lizibil</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_Lizibil_Task_Referinte</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Gateway_Lizibil_Send_NotifEsec</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sendTask id="Send_NotifEsec" name="Notifica esecul importului (email)">
+      <bpmn:incoming>Flow_Gateway_Lizibil_Send_NotifEsec</bpmn:incoming>
+      <bpmn:outgoing>Flow_Send_NotifEsec_End_ImportEsuat</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_ImportEsuat" name="Import esuat">
+      <bpmn:incoming>Flow_Send_NotifEsec_End_ImportEsuat</bpmn:incoming>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_Import" errorRef="Error_Import" />
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Task_Referinte" name="Incarca nomenclatorul si cursul BNR">
+      <bpmn:incoming>Flow_Gateway_Lizibil_Task_Referinte</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_Referinte_Sub_ValideazaInregistrarea</bpmn:outgoing>
+      <bpmn:property id="Property_Task_Referinte" name="__targetRef_placeholder" />
+      <bpmn:dataInputAssociation id="DataIn_Store_Nomenclator_Task_Referinte"><bpmn:sourceRef>Store_Nomenclator</bpmn:sourceRef><bpmn:targetRef>Property_Task_Referinte</bpmn:targetRef></bpmn:dataInputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:subProcess id="Sub_ValideazaInregistrarea" name="Valideaza inregistrarea (pentru fiecare rand)">
+      <bpmn:incoming>Flow_Task_Referinte_Sub_ValideazaInregistrarea</bpmn:incoming>
+      <bpmn:outgoing>Flow_Sub_ValideazaInregistrarea_Task_Upsert</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true" />
+      <bpmn:startEvent id="SV_Start">
+        <bpmn:outgoing>Flow_SV_Start_SV_Verifica</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:serviceTask id="SV_Verifica" name="Verifica campuri, format luna, suma, moneda, coduri">
+        <bpmn:incoming>Flow_SV_Start_SV_Verifica</bpmn:incoming>
+        <bpmn:outgoing>Flow_SV_Verifica_SV_Rezultat</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:exclusiveGateway id="SV_Rezultat" name="Rezultat?">
+        <bpmn:incoming>Flow_SV_Verifica_SV_Rezultat</bpmn:incoming>
+        <bpmn:outgoing>Flow_SV_Rezultat_SV_Valid</bpmn:outgoing>
+        <bpmn:outgoing>Flow_SV_Rezultat_SV_Invalid</bpmn:outgoing>
+        <bpmn:outgoing>Flow_SV_Rezultat_SV_Duplicat</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:task id="SV_Valid" name="Adauga la valide (conversie in RON)">
+        <bpmn:incoming>Flow_SV_Rezultat_SV_Valid</bpmn:incoming>
+        <bpmn:outgoing>Flow_SV_Valid_SV_Merge</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="SV_Invalid" name="Adauga eroare cu mesaj personalizat">
+        <bpmn:incoming>Flow_SV_Rezultat_SV_Invalid</bpmn:incoming>
+        <bpmn:outgoing>Flow_SV_Invalid_SV_Merge</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="SV_Duplicat" name="Marcheaza duplicatul (prima aparitie castiga)">
+        <bpmn:incoming>Flow_SV_Rezultat_SV_Duplicat</bpmn:incoming>
+        <bpmn:outgoing>Flow_SV_Duplicat_SV_Merge</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:exclusiveGateway id="SV_Merge">
+        <bpmn:incoming>Flow_SV_Valid_SV_Merge</bpmn:incoming>
+        <bpmn:incoming>Flow_SV_Invalid_SV_Merge</bpmn:incoming>
+        <bpmn:incoming>Flow_SV_Duplicat_SV_Merge</bpmn:incoming>
+        <bpmn:outgoing>Flow_SV_Merge_SV_End</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:endEvent id="SV_End">
+        <bpmn:incoming>Flow_SV_Merge_SV_End</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_SV_Start_SV_Verifica" sourceRef="SV_Start" targetRef="SV_Verifica" />
+      <bpmn:sequenceFlow id="Flow_SV_Verifica_SV_Rezultat" sourceRef="SV_Verifica" targetRef="SV_Rezultat" />
+      <bpmn:sequenceFlow id="Flow_SV_Rezultat_SV_Valid" name="valid" sourceRef="SV_Rezultat" targetRef="SV_Valid" />
+      <bpmn:sequenceFlow id="Flow_SV_Rezultat_SV_Invalid" name="invalid" sourceRef="SV_Rezultat" targetRef="SV_Invalid" />
+      <bpmn:sequenceFlow id="Flow_SV_Rezultat_SV_Duplicat" name="duplicat" sourceRef="SV_Rezultat" targetRef="SV_Duplicat" />
+      <bpmn:sequenceFlow id="Flow_SV_Valid_SV_Merge" sourceRef="SV_Valid" targetRef="SV_Merge" />
+      <bpmn:sequenceFlow id="Flow_SV_Invalid_SV_Merge" sourceRef="SV_Invalid" targetRef="SV_Merge" />
+      <bpmn:sequenceFlow id="Flow_SV_Duplicat_SV_Merge" sourceRef="SV_Duplicat" targetRef="SV_Merge" />
+      <bpmn:sequenceFlow id="Flow_SV_Merge_SV_End" sourceRef="SV_Merge" targetRef="SV_End" />
+    </bpmn:subProcess>
+    <bpmn:serviceTask id="Task_Upsert" name="Upsert Realizat_Lunar si Bugete; calculeaza maverick">
+      <bpmn:incoming>Flow_Sub_ValideazaInregistrarea_Task_Upsert</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_Upsert_Task_SalveazaErori</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOut_Task_Upsert_Store_Realizat"><bpmn:targetRef>Store_Realizat</bpmn:targetRef></bpmn:dataOutputAssociation>
+      <bpmn:dataOutputAssociation id="DataOut_Task_Upsert_Store_Bugete"><bpmn:targetRef>Store_Bugete</bpmn:targetRef></bpmn:dataOutputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_SalveazaErori" name="Salveaza randurile respinse in Erori_Import">
+      <bpmn:incoming>Flow_Task_Upsert_Task_SalveazaErori</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_SalveazaErori_Sub_AnalizaCC</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOut_Task_SalveazaErori_Store_Erori"><bpmn:targetRef>Store_Erori</bpmn:targetRef></bpmn:dataOutputAssociation>
+    </bpmn:serviceTask>
+    <bpmn:subProcess id="Sub_AnalizaCC" name="Analizeaza centrul de cost (pentru fiecare CC)">
+      <bpmn:incoming>Flow_Task_SalveazaErori_Sub_AnalizaCC</bpmn:incoming>
+      <bpmn:outgoing>Flow_Sub_AnalizaCC_Task_Raport</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics isSequential="true" />
+      <bpmn:startEvent id="SA_Start">
+        <bpmn:outgoing>Flow_SA_Start_SA_Varianta</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:serviceTask id="SA_Varianta" name="Calculeaza totaluri, varianta si alerta (regula)">
+        <bpmn:incoming>Flow_SA_Start_SA_Varianta</bpmn:incoming>
+        <bpmn:outgoing>Flow_SA_Varianta_SA_AnalizaAI</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:serviceTask id="SA_AnalizaAI" name="Analiza AI (Groq)">
+        <bpmn:incoming>Flow_SA_Varianta_SA_AnalizaAI</bpmn:incoming>
+        <bpmn:outgoing>Flow_SA_AnalizaAI_SA_Salveaza</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:boundaryEvent id="SA_EroareAI" name="Eroare AI" attachedToRef="SA_AnalizaAI">
+        <bpmn:outgoing>Flow_SA_EroareAI_SA_Esuata</bpmn:outgoing>
+        <bpmn:errorEventDefinition id="ErrorEventDefinition_AI" errorRef="Error_AI" />
+      </bpmn:boundaryEvent>
+      <bpmn:serviceTask id="SA_Salveaza" name="Salveaza analiza (OK; verifica alerta AI vs. regula)">
+        <bpmn:incoming>Flow_SA_AnalizaAI_SA_Salveaza</bpmn:incoming>
+        <bpmn:outgoing>Flow_SA_Salveaza_SA_Merge</bpmn:outgoing>
+        <bpmn:dataOutputAssociation id="DataOut_SA_Salveaza_Store_Analize1"><bpmn:targetRef>Store_Analize1</bpmn:targetRef></bpmn:dataOutputAssociation>
+      </bpmn:serviceTask>
+      <bpmn:serviceTask id="SA_Esuata" name="Marcheaza analiza esuata (Status = Esuata)">
+        <bpmn:incoming>Flow_SA_EroareAI_SA_Esuata</bpmn:incoming>
+        <bpmn:outgoing>Flow_SA_Esuata_SA_Merge</bpmn:outgoing>
+        <bpmn:dataOutputAssociation id="DataOut_SA_Esuata_Store_Analize2"><bpmn:targetRef>Store_Analize2</bpmn:targetRef></bpmn:dataOutputAssociation>
+      </bpmn:serviceTask>
+      <bpmn:exclusiveGateway id="SA_Merge">
+        <bpmn:incoming>Flow_SA_Salveaza_SA_Merge</bpmn:incoming>
+        <bpmn:incoming>Flow_SA_Esuata_SA_Merge</bpmn:incoming>
+        <bpmn:outgoing>Flow_SA_Merge_SA_End</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:endEvent id="SA_End">
+        <bpmn:incoming>Flow_SA_Merge_SA_End</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_SA_Start_SA_Varianta" sourceRef="SA_Start" targetRef="SA_Varianta" />
+      <bpmn:sequenceFlow id="Flow_SA_Varianta_SA_AnalizaAI" sourceRef="SA_Varianta" targetRef="SA_AnalizaAI" />
+      <bpmn:sequenceFlow id="Flow_SA_AnalizaAI_SA_Salveaza" sourceRef="SA_AnalizaAI" targetRef="SA_Salveaza" />
+      <bpmn:sequenceFlow id="Flow_SA_Salveaza_SA_Merge" sourceRef="SA_Salveaza" targetRef="SA_Merge" />
+      <bpmn:sequenceFlow id="Flow_SA_Merge_SA_End" sourceRef="SA_Merge" targetRef="SA_End" />
+      <bpmn:sequenceFlow id="Flow_SA_EroareAI_SA_Esuata" sourceRef="SA_EroareAI" targetRef="SA_Esuata" />
+      <bpmn:sequenceFlow id="Flow_SA_Esuata_SA_Merge" sourceRef="SA_Esuata" targetRef="SA_Merge" />
+    </bpmn:subProcess>
+    <bpmn:serviceTask id="Task_Raport" name="Genereaza raportul HTML">
+      <bpmn:incoming>Flow_Sub_AnalizaCC_Task_Raport</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_Raport_Send_Raport</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sendTask id="Send_Raport" name="Trimite raportul (email echipa + BCC, Teams)">
+      <bpmn:incoming>Flow_Task_Raport_Send_Raport</bpmn:incoming>
+      <bpmn:outgoing>Flow_Send_Raport_Task_MutaFisier</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:serviceTask id="Task_MutaFisier" name="Muta fisierul in Procesate si jurnalizeaza">
+      <bpmn:incoming>Flow_Send_Raport_Task_MutaFisier</bpmn:incoming>
+      <bpmn:outgoing>Flow_Task_MutaFisier_End_ImportFinalizat</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_ImportFinalizat" name="Import finalizat">
+      <bpmn:incoming>Flow_Task_MutaFisier_End_ImportFinalizat</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:dataStoreReference id="Store_Nomenclator" name="Nomenclator" />
+    <bpmn:dataStoreReference id="Store_Realizat" name="Realizat_Lunar" />
+    <bpmn:dataStoreReference id="Store_Bugete" name="Bugete" />
+    <bpmn:dataStoreReference id="Store_Erori" name="Erori_Import" />
+    <bpmn:dataStoreReference id="Store_Analize1" name="Analize_AI" />
+    <bpmn:dataStoreReference id="Store_Analize2" name="Analize_AI" />
+    <bpmn:sequenceFlow id="Flow_Start_FisierNou_Task_CitesteFisier" sourceRef="Start_FisierNou" targetRef="Task_CitesteFisier" />
+    <bpmn:sequenceFlow id="Flow_Task_CitesteFisier_Gateway_Lizibil" sourceRef="Task_CitesteFisier" targetRef="Gateway_Lizibil" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Lizibil_Task_Referinte" name="Da" sourceRef="Gateway_Lizibil" targetRef="Task_Referinte" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Lizibil_Send_NotifEsec" name="Nu" sourceRef="Gateway_Lizibil" targetRef="Send_NotifEsec" />
+    <bpmn:sequenceFlow id="Flow_Send_NotifEsec_End_ImportEsuat" sourceRef="Send_NotifEsec" targetRef="End_ImportEsuat" />
+    <bpmn:sequenceFlow id="Flow_Task_Referinte_Sub_ValideazaInregistrarea" sourceRef="Task_Referinte" targetRef="Sub_ValideazaInregistrarea" />
+    <bpmn:sequenceFlow id="Flow_Sub_ValideazaInregistrarea_Task_Upsert" sourceRef="Sub_ValideazaInregistrarea" targetRef="Task_Upsert" />
+    <bpmn:sequenceFlow id="Flow_Task_Upsert_Task_SalveazaErori" sourceRef="Task_Upsert" targetRef="Task_SalveazaErori" />
+    <bpmn:sequenceFlow id="Flow_Task_SalveazaErori_Sub_AnalizaCC" sourceRef="Task_SalveazaErori" targetRef="Sub_AnalizaCC" />
+    <bpmn:sequenceFlow id="Flow_Sub_AnalizaCC_Task_Raport" sourceRef="Sub_AnalizaCC" targetRef="Task_Raport" />
+    <bpmn:sequenceFlow id="Flow_Task_Raport_Send_Raport" sourceRef="Task_Raport" targetRef="Send_Raport" />
+    <bpmn:sequenceFlow id="Flow_Send_Raport_Task_MutaFisier" sourceRef="Send_Raport" targetRef="Task_MutaFisier" />
+    <bpmn:sequenceFlow id="Flow_Task_MutaFisier_End_ImportFinalizat" sourceRef="Task_MutaFisier" targetRef="End_ImportFinalizat" />
+    <bpmn:textAnnotation id="Annotation_Validare"><bpmn:text>Apply to each (concurrency 1): randurile valide merg in varValide; cele invalide si duplicatele merg in varErori, cu mesaj personalizat (rand, cheie, valoare primita si asteptata).</bpmn:text></bpmn:textAnnotation>
+    <bpmn:textAnnotation id="Annotation_AI"><bpmn:text>Scope AI_Try / AI_Catch: un esec al AI nu opreste importul; raportul se trimite oricum.</bpmn:text></bpmn:textAnnotation>
+    <bpmn:association id="Assoc_Annotation_Validare_Sub_ValideazaInregistrarea" sourceRef="Annotation_Validare" targetRef="Sub_ValideazaInregistrarea" />
+    <bpmn:association id="Assoc_Annotation_AI_Sub_AnalizaCC" sourceRef="Annotation_AI" targetRef="Sub_AnalizaCC" />
+  </bpmn:process>
+  <bpmn:error id="Error_Import" name="Fisier ilizibil sau fara inregistrari" errorCode="IMPORT_INVALID" />
+  <bpmn:error id="Error_AI" name="Eroare la apelul AI (HTTP / timeout / JSON invalid)" errorCode="AI_FAILED" />
+  <bpmndi:BPMNDiagram id="Diagram_Definitions_Flux2">
+    <bpmndi:BPMNPlane id="Plane_Definitions_Flux2" bpmnElement="Collaboration_Definitions_Flux2">
+    <bpmndi:BPMNShape id="Participant_BudgetGuard2_di" bpmnElement="Participant_BudgetGuard2" isHorizontal="true"><dc:Bounds x="150" y="150" width="2980" height="720" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Participant_BNR2_di" bpmnElement="Participant_BNR2" isHorizontal="true"><dc:Bounds x="480" y="40" width="220" height="60" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Participant_Groq_di" bpmnElement="Participant_Groq" isHorizontal="true"><dc:Bounds x="1940" y="40" width="280" height="60" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Start_FisierNou_di" bpmnElement="Start_FisierNou"><dc:Bounds x="200" y="452" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="168" y="492" width="100" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_CitesteFisier_di" bpmnElement="Task_CitesteFisier"><dc:Bounds x="290" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Gateway_Lizibil_di" bpmnElement="Gateway_Lizibil" isMarkerVisible="true"><dc:Bounds x="440" y="445" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="415" y="414" width="100" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Send_NotifEsec_di" bpmnElement="Send_NotifEsec"><dc:Bounds x="415" y="750" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="End_ImportEsuat_di" bpmnElement="End_ImportEsuat"><dc:Bounds x="577" y="772" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="545" y="812" width="100" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_Referinte_di" bpmnElement="Task_Referinte"><dc:Bounds x="540" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Sub_ValideazaInregistrarea_di" bpmnElement="Sub_ValideazaInregistrarea" isExpanded="true"><dc:Bounds x="690" y="280" width="740" height="380" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SV_Start_di" bpmnElement="SV_Start"><dc:Bounds x="722" y="452" width="36" height="36" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SV_Verifica_di" bpmnElement="SV_Verifica"><dc:Bounds x="810" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SV_Rezultat_di" bpmnElement="SV_Rezultat" isMarkerVisible="true"><dc:Bounds x="965" y="445" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="908" y="430" width="55" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SV_Valid_di" bpmnElement="SV_Valid"><dc:Bounds x="1070" y="320" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SV_Invalid_di" bpmnElement="SV_Invalid"><dc:Bounds x="1070" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SV_Duplicat_di" bpmnElement="SV_Duplicat"><dc:Bounds x="1070" y="540" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SV_Merge_di" bpmnElement="SV_Merge" isMarkerVisible="true"><dc:Bounds x="1225" y="445" width="50" height="50" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SV_End_di" bpmnElement="SV_End"><dc:Bounds x="1352" y="452" width="36" height="36" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_Upsert_di" bpmnElement="Task_Upsert"><dc:Bounds x="1480" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_SalveazaErori_di" bpmnElement="Task_SalveazaErori"><dc:Bounds x="1630" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Sub_AnalizaCC_di" bpmnElement="Sub_AnalizaCC" isExpanded="true"><dc:Bounds x="1780" y="340" width="740" height="320" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SA_Start_di" bpmnElement="SA_Start"><dc:Bounds x="1812" y="452" width="36" height="36" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SA_Varianta_di" bpmnElement="SA_Varianta"><dc:Bounds x="1900" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SA_AnalizaAI_di" bpmnElement="SA_AnalizaAI"><dc:Bounds x="2030" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SA_EroareAI_di" bpmnElement="SA_EroareAI"><dc:Bounds x="2062" y="492" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="2010" y="514" width="50" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SA_Salveaza_di" bpmnElement="SA_Salveaza"><dc:Bounds x="2160" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SA_Esuata_di" bpmnElement="SA_Esuata"><dc:Bounds x="2160" y="550" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SA_Merge_di" bpmnElement="SA_Merge" isMarkerVisible="true"><dc:Bounds x="2315" y="445" width="50" height="50" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="SA_End_di" bpmnElement="SA_End"><dc:Bounds x="2442" y="452" width="36" height="36" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_Raport_di" bpmnElement="Task_Raport"><dc:Bounds x="2570" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Send_Raport_di" bpmnElement="Send_Raport"><dc:Bounds x="2720" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Task_MutaFisier_di" bpmnElement="Task_MutaFisier"><dc:Bounds x="2870" y="430" width="100" height="80" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="End_ImportFinalizat_di" bpmnElement="End_ImportFinalizat"><dc:Bounds x="3042" y="452" width="36" height="36" /><bpmndi:BPMNLabel><dc:Bounds x="3010" y="492" width="100" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Store_Nomenclator_di" bpmnElement="Store_Nomenclator"><dc:Bounds x="325" y="185" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="241" y="200" width="80" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Store_Realizat_di" bpmnElement="Store_Realizat"><dc:Bounds x="1460" y="185" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="1361" y="200" width="95" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Store_Bugete_di" bpmnElement="Store_Bugete"><dc:Bounds x="1550" y="185" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="1604" y="200" width="60" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Store_Erori_di" bpmnElement="Store_Erori"><dc:Bounds x="1710" y="185" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="1764" y="200" width="80" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Store_Analize1_di" bpmnElement="Store_Analize1"><dc:Bounds x="2185" y="185" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="2239" y="200" width="80" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Store_Analize2_di" bpmnElement="Store_Analize2"><dc:Bounds x="2185" y="765" width="50" height="50" /><bpmndi:BPMNLabel><dc:Bounds x="2239" y="780" width="80" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Annotation_Validare_di" bpmnElement="Annotation_Validare"><dc:Bounds x="730" y="752" width="380" height="76" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNShape id="Annotation_AI_di" bpmnElement="Annotation_AI"><dc:Bounds x="1880" y="760" width="300" height="60" /></bpmndi:BPMNShape>
+    <bpmndi:BPMNEdge id="Flow_SV_Start_SV_Verifica_di" bpmnElement="Flow_SV_Start_SV_Verifica"><di:waypoint x="758" y="470" /><di:waypoint x="810" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SV_Verifica_SV_Rezultat_di" bpmnElement="Flow_SV_Verifica_SV_Rezultat"><di:waypoint x="910" y="470" /><di:waypoint x="965" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SV_Rezultat_SV_Valid_di" bpmnElement="Flow_SV_Rezultat_SV_Valid"><di:waypoint x="990" y="445" /><di:waypoint x="990" y="360" /><di:waypoint x="1070" y="360" /><bpmndi:BPMNLabel><dc:Bounds x="995" y="423" width="35" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SV_Rezultat_SV_Invalid_di" bpmnElement="Flow_SV_Rezultat_SV_Invalid"><di:waypoint x="1015" y="470" /><di:waypoint x="1070" y="470" /><bpmndi:BPMNLabel><dc:Bounds x="1021" y="452" width="49" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SV_Rezultat_SV_Duplicat_di" bpmnElement="Flow_SV_Rezultat_SV_Duplicat"><di:waypoint x="990" y="495" /><di:waypoint x="990" y="580" /><di:waypoint x="1070" y="580" /><bpmndi:BPMNLabel><dc:Bounds x="995" y="501" width="56" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SV_Valid_SV_Merge_di" bpmnElement="Flow_SV_Valid_SV_Merge"><di:waypoint x="1170" y="360" /><di:waypoint x="1250" y="360" /><di:waypoint x="1250" y="445" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SV_Invalid_SV_Merge_di" bpmnElement="Flow_SV_Invalid_SV_Merge"><di:waypoint x="1170" y="470" /><di:waypoint x="1225" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SV_Duplicat_SV_Merge_di" bpmnElement="Flow_SV_Duplicat_SV_Merge"><di:waypoint x="1170" y="580" /><di:waypoint x="1250" y="580" /><di:waypoint x="1250" y="495" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SV_Merge_SV_End_di" bpmnElement="Flow_SV_Merge_SV_End"><di:waypoint x="1275" y="470" /><di:waypoint x="1352" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SA_Start_SA_Varianta_di" bpmnElement="Flow_SA_Start_SA_Varianta"><di:waypoint x="1848" y="470" /><di:waypoint x="1900" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SA_Varianta_SA_AnalizaAI_di" bpmnElement="Flow_SA_Varianta_SA_AnalizaAI"><di:waypoint x="2000" y="470" /><di:waypoint x="2030" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SA_AnalizaAI_SA_Salveaza_di" bpmnElement="Flow_SA_AnalizaAI_SA_Salveaza"><di:waypoint x="2130" y="470" /><di:waypoint x="2160" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SA_Salveaza_SA_Merge_di" bpmnElement="Flow_SA_Salveaza_SA_Merge"><di:waypoint x="2260" y="470" /><di:waypoint x="2315" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SA_Merge_SA_End_di" bpmnElement="Flow_SA_Merge_SA_End"><di:waypoint x="2365" y="470" /><di:waypoint x="2442" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SA_EroareAI_SA_Esuata_di" bpmnElement="Flow_SA_EroareAI_SA_Esuata"><di:waypoint x="2080" y="528" /><di:waypoint x="2080" y="590" /><di:waypoint x="2160" y="590" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_SA_Esuata_SA_Merge_di" bpmnElement="Flow_SA_Esuata_SA_Merge"><di:waypoint x="2260" y="590" /><di:waypoint x="2340" y="590" /><di:waypoint x="2340" y="495" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Start_FisierNou_Task_CitesteFisier_di" bpmnElement="Flow_Start_FisierNou_Task_CitesteFisier"><di:waypoint x="236" y="470" /><di:waypoint x="290" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_CitesteFisier_Gateway_Lizibil_di" bpmnElement="Flow_Task_CitesteFisier_Gateway_Lizibil"><di:waypoint x="390" y="470" /><di:waypoint x="440" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_Lizibil_Task_Referinte_di" bpmnElement="Flow_Gateway_Lizibil_Task_Referinte"><di:waypoint x="490" y="470" /><di:waypoint x="540" y="470" /><bpmndi:BPMNLabel><dc:Bounds x="496" y="452" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Gateway_Lizibil_Send_NotifEsec_di" bpmnElement="Flow_Gateway_Lizibil_Send_NotifEsec"><di:waypoint x="465" y="495" /><di:waypoint x="465" y="750" /><bpmndi:BPMNLabel><dc:Bounds x="470" y="501" width="24" height="14" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Send_NotifEsec_End_ImportEsuat_di" bpmnElement="Flow_Send_NotifEsec_End_ImportEsuat"><di:waypoint x="515" y="790" /><di:waypoint x="577" y="790" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_Referinte_Sub_ValideazaInregistrarea_di" bpmnElement="Flow_Task_Referinte_Sub_ValideazaInregistrarea"><di:waypoint x="640" y="470" /><di:waypoint x="690" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Sub_ValideazaInregistrarea_Task_Upsert_di" bpmnElement="Flow_Sub_ValideazaInregistrarea_Task_Upsert"><di:waypoint x="1430" y="470" /><di:waypoint x="1480" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_Upsert_Task_SalveazaErori_di" bpmnElement="Flow_Task_Upsert_Task_SalveazaErori"><di:waypoint x="1580" y="470" /><di:waypoint x="1630" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_SalveazaErori_Sub_AnalizaCC_di" bpmnElement="Flow_Task_SalveazaErori_Sub_AnalizaCC"><di:waypoint x="1730" y="470" /><di:waypoint x="1780" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Sub_AnalizaCC_Task_Raport_di" bpmnElement="Flow_Sub_AnalizaCC_Task_Raport"><di:waypoint x="2520" y="470" /><di:waypoint x="2570" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_Raport_Send_Raport_di" bpmnElement="Flow_Task_Raport_Send_Raport"><di:waypoint x="2670" y="470" /><di:waypoint x="2720" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Send_Raport_Task_MutaFisier_di" bpmnElement="Flow_Send_Raport_Task_MutaFisier"><di:waypoint x="2820" y="470" /><di:waypoint x="2870" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Flow_Task_MutaFisier_End_ImportFinalizat_di" bpmnElement="Flow_Task_MutaFisier_End_ImportFinalizat"><di:waypoint x="2970" y="470" /><di:waypoint x="3042" y="470" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="MsgFlow_Task_Referinte_Participant_BNR2_di" bpmnElement="MsgFlow_Task_Referinte_Participant_BNR2"><di:waypoint x="575" y="430" /><di:waypoint x="575" y="100" /><bpmndi:BPMNLabel><dc:Bounds x="449" y="218" width="120" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="MsgFlow_Participant_BNR2_Task_Referinte_di" bpmnElement="MsgFlow_Participant_BNR2_Task_Referinte"><di:waypoint x="605" y="100" /><di:waypoint x="605" y="430" /><bpmndi:BPMNLabel><dc:Bounds x="611" y="218" width="120" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="MsgFlow_SA_AnalizaAI_Participant_Groq_di" bpmnElement="MsgFlow_SA_AnalizaAI_Participant_Groq"><di:waypoint x="2065" y="430" /><di:waypoint x="2065" y="100" /><bpmndi:BPMNLabel><dc:Bounds x="1939" y="218" width="120" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="MsgFlow_Participant_Groq_SA_AnalizaAI_di" bpmnElement="MsgFlow_Participant_Groq_SA_AnalizaAI"><di:waypoint x="2095" y="100" /><di:waypoint x="2095" y="430" /><bpmndi:BPMNLabel><dc:Bounds x="2101" y="218" width="120" height="27" /></bpmndi:BPMNLabel></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="DataIn_Store_Nomenclator_Task_Referinte_di" bpmnElement="DataIn_Store_Nomenclator_Task_Referinte"><di:waypoint x="350" y="235" /><di:waypoint x="555" y="430" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="DataOut_Task_Upsert_Store_Realizat_di" bpmnElement="DataOut_Task_Upsert_Store_Realizat"><di:waypoint x="1505" y="430" /><di:waypoint x="1485" y="235" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="DataOut_Task_Upsert_Store_Bugete_di" bpmnElement="DataOut_Task_Upsert_Store_Bugete"><di:waypoint x="1555" y="430" /><di:waypoint x="1575" y="235" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="DataOut_Task_SalveazaErori_Store_Erori_di" bpmnElement="DataOut_Task_SalveazaErori_Store_Erori"><di:waypoint x="1680" y="430" /><di:waypoint x="1735" y="235" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="DataOut_SA_Salveaza_Store_Analize1_di" bpmnElement="DataOut_SA_Salveaza_Store_Analize1"><di:waypoint x="2210" y="430" /><di:waypoint x="2210" y="235" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="DataOut_SA_Esuata_Store_Analize2_di" bpmnElement="DataOut_SA_Esuata_Store_Analize2"><di:waypoint x="2210" y="630" /><di:waypoint x="2210" y="765" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Assoc_Annotation_Validare_Sub_ValideazaInregistrarea_di" bpmnElement="Assoc_Annotation_Validare_Sub_ValideazaInregistrarea"><di:waypoint x="760" y="752" /><di:waypoint x="760" y="660" /></bpmndi:BPMNEdge>
+    <bpmndi:BPMNEdge id="Assoc_Annotation_AI_Sub_AnalizaCC_di" bpmnElement="Assoc_Annotation_AI_Sub_AnalizaCC"><di:waypoint x="1910" y="760" /><di:waypoint x="1900" y="660" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,41 @@
+{
+  "type": "object",
+  "properties": {
+    "found": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date_generale": {
+            "type": "object",
+            "properties": {
+              "cui": { "type": "integer" },
+              "denumire": { "type": "string" },
+              "adresa": { "type": "string" },
+              "data": { "type": "string" },
+              "stare_inregistrare": { "type": "string" }
+            }
+          },
+          "inregistrare_scop_Tva": {
+            "type": "object",
+            "properties": {
+              "scpTVA": { "type": "boolean" }
+            }
+          },
+          "stare_inactiv": {
+            "type": "object",
+            "properties": {
+              "dataInactivare": { "type": "string" },
+              "dataRadiere": { "type": "string" },
+              "statusInactivi": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "notFound": {
+      "type": "array",
+      "items": { "type": "integer" }
+    }
+  }
+}

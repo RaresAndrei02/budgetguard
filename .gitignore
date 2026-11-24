@@ -1,0 +1,29 @@
+# Secrets
+.env
+.env.*
+!.env.example
+samples/*secret*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Archives (exported solution ZIPs are unpacked into solution/)
+*.zip
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Generated previews
+report/preview.html
+
+# Local backups (contain real e-mail addresses)
+data/backup/
