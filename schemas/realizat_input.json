@@ -1,0 +1,25 @@
+{
+  "type": "object",
+  "properties": {
+    "sursa": { "type": ["string", "null"] },
+    "luna": { "type": ["string", "null"] },
+    "generat_la": { "type": ["string", "null"] },
+    "inregistrari": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "rand": { "type": ["integer", "number", "string", "null"] },
+          "luna": { "type": ["string", "number", "null"] },
+          "centru_cost": { "type": ["string", "number", "null"] },
+          "categorie": { "type": ["string", "number", "null"] },
+          "suma": { "type": ["number", "string", "null"] },
+          "moneda": { "type": ["string", "null"] },
+          "nr_documente": { "type": ["integer", "number", "string", "null"] }
+        }
+      }
+    }
+  },
+  "required": ["inregistrari"]
+}

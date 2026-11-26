@@ -27,3 +27,9 @@ report/preview.html
 
 # Local backups (contain real e-mail addresses)
 data/backup/
+
+# Flux 2 run exports (scripts/compare_results.py)
+data/run_check/
+
+# Playwright MCP screenshots
+.playwright-mcp/

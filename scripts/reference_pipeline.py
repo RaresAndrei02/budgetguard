@@ -110,19 +110,13 @@ def alert_rule(pct: float, prag: float) -> str:
     return "Roșu"
 
 
-def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--eur", type=float)
-    ap.add_argument("--usd", type=float)
-    args = ap.parse_args()
-
+def default_rates() -> tuple[dict, str]:
     meta = json.loads((ROOT / "data" / "expected" / "generation_meta.json").read_text(encoding="utf-8"))
-    rates = dict(meta["rates"])
-    if args.eur:
-        rates["EUR"] = args.eur
-    if args.usd:
-        rates["USD"] = args.usd
+    return dict(meta["rates"]), meta["rate_date"]
 
+
+def compute(rates: dict, rate_date: str) -> dict:
+    """Runs the whole Flux 2 logic in memory and returns the expected-results object."""
     payload = json.loads((ROOT / "data" / "input" / "realizat_2026-10.json").read_text(encoding="utf-8"))
     nomen = read_csv("nomenclator.csv")
     coduri_cc = [n["Title"] for n in nomen if n["Tip"] == "CC"]
@@ -177,7 +171,7 @@ def main():
     result = {
         "fisier": "realizat_2026-10.json",
         "luna": payload["luna"],
-        "cursuri": {"data": meta["rate_date"], **rates},
+        "cursuri": {"data": rate_date, **rates},
         "sumar": {
             "total": len(rows), "valide": len(valide), "invalide": len(erori) - tipuri.get("Duplicat", 0),
             "duplicate": tipuri.get("Duplicat", 0), "erori_pe_tip": tipuri,
@@ -187,6 +181,24 @@ def main():
         "maverick": [{"cheie": r["cheie"], "maverick_ron": r["maverick_ron"]} for r in realizat if r["maverick_ron"] > 0],
         "centre_cost": cc_table,
     }
+    return result
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--eur", type=float)
+    ap.add_argument("--usd", type=float)
+    args = ap.parse_args()
+
+    rates, rate_date = default_rates()
+    if args.eur:
+        rates["EUR"] = args.eur
+    if args.usd:
+        rates["USD"] = args.usd
+    result = compute(rates, rate_date)
+    erori = result["erori"]
+    cc_table = result["centre_cost"]
+
     out = ROOT / "data" / "expected" / "expected_results.json"
     out.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 

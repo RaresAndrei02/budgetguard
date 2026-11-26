@@ -23,7 +23,7 @@
       <bpmn:outgoing>Flow_Gateway_Lizibil_Task_Referinte</bpmn:outgoing>
       <bpmn:outgoing>Flow_Gateway_Lizibil_Send_NotifEsec</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:sendTask id="Send_NotifEsec" name="Notifica esecul importului (email)">
+    <bpmn:sendTask id="Send_NotifEsec" name="Notifica esecul importului (email + Teams)">
       <bpmn:incoming>Flow_Gateway_Lizibil_Send_NotifEsec</bpmn:incoming>
       <bpmn:outgoing>Flow_Send_NotifEsec_End_ImportEsuat</bpmn:outgoing>
     </bpmn:sendTask>
@@ -103,7 +103,7 @@
       <bpmn:startEvent id="SA_Start">
         <bpmn:outgoing>Flow_SA_Start_SA_Varianta</bpmn:outgoing>
       </bpmn:startEvent>
-      <bpmn:serviceTask id="SA_Varianta" name="Calculeaza totaluri, varianta si alerta (regula)">
+      <bpmn:serviceTask id="SA_Varianta" name="Calculeaza si salveaza totaluri, varianta, alerta (regula)">
         <bpmn:incoming>Flow_SA_Start_SA_Varianta</bpmn:incoming>
         <bpmn:outgoing>Flow_SA_Varianta_SA_AnalizaAI</bpmn:outgoing>
       </bpmn:serviceTask>
@@ -176,11 +176,11 @@
     <bpmn:sequenceFlow id="Flow_Send_Raport_Task_MutaFisier" sourceRef="Send_Raport" targetRef="Task_MutaFisier" />
     <bpmn:sequenceFlow id="Flow_Task_MutaFisier_End_ImportFinalizat" sourceRef="Task_MutaFisier" targetRef="End_ImportFinalizat" />
     <bpmn:textAnnotation id="Annotation_Validare"><bpmn:text>Apply to each (concurrency 1): randurile valide merg in varValide; cele invalide si duplicatele merg in varErori, cu mesaj personalizat (rand, cheie, valoare primita si asteptata).</bpmn:text></bpmn:textAnnotation>
-    <bpmn:textAnnotation id="Annotation_AI"><bpmn:text>Scope AI_Try / AI_Catch: un esec al AI nu opreste importul; raportul se trimite oricum.</bpmn:text></bpmn:textAnnotation>
+    <bpmn:textAnnotation id="Annotation_AI"><bpmn:text>Scope AI_Try / AI_Catch: calculele se salveaza inainte de apel; un esec al AI nu opreste importul, raportul se trimite oricum.</bpmn:text></bpmn:textAnnotation>
     <bpmn:association id="Assoc_Annotation_Validare_Sub_ValideazaInregistrarea" sourceRef="Annotation_Validare" targetRef="Sub_ValideazaInregistrarea" />
     <bpmn:association id="Assoc_Annotation_AI_Sub_AnalizaCC" sourceRef="Annotation_AI" targetRef="Sub_AnalizaCC" />
   </bpmn:process>
-  <bpmn:error id="Error_Import" name="Fisier ilizibil sau fara inregistrari" errorCode="IMPORT_INVALID" />
+  <bpmn:error id="Error_Import" name="Fisier ilizibil, fara inregistrari sau eroare la import" errorCode="IMPORT_INVALID" />
   <bpmn:error id="Error_AI" name="Eroare la apelul AI (HTTP / timeout / JSON invalid)" errorCode="AI_FAILED" />
   <bpmndi:BPMNDiagram id="Diagram_Definitions_Flux2">
     <bpmndi:BPMNPlane id="Plane_Definitions_Flux2" bpmnElement="Collaboration_Definitions_Flux2">

@@ -1,0 +1,120 @@
+<!-- BudgetGuard: monthly Budget vs. Actual report. Inline CSS only (Outlook/Gmail ignore <style>).
+     Placeholders (UPPERCASE names in double curly braces) are replaced by render_preview.py (preview) and by the Html_Raport action (flow).
+     Repeated rows come from report/fragments/*.html. Do not use the at-sign in this file: the flow designer
+     would read it as the start of an expression. -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f4f6;padding:16px 0">
+<tr><td align="center">
+<table role="presentation" width="760" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:760px;background:#ffffff;border:1px solid #e5e7eb;font-family:Segoe UI,Arial,Helvetica,sans-serif;color:#1f2937;font-size:14px;line-height:1.45">
+
+  <!-- 1. Header -->
+  <tr><td style="background:#1e3a8a;padding:18px 24px">
+    <div style="font-size:12px;color:#c7d2fe;letter-spacing:0.5px">BUDGETGUARD · VESTRA RETAIL SRL</div>
+    <div style="font-size:20px;font-weight:600;color:#ffffff;margin-top:2px">Buget vs. Realizat · {{LUNA}}</div>
+  </td></tr>
+  <tr><td style="padding:10px 24px;background:#eef2ff;font-size:12px;color:#4b5563">
+    Fișier <b style="color:#1f2937">{{FISIER}}</b> · rulare {{RULARE_ID}} · curs {{CURS_INFO}}
+  </td></tr>
+
+  <!-- KPI tiles -->
+  <tr><td style="padding:20px 24px 4px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td width="25%" valign="top" style="padding:0 6px 0 0">
+        <div style="border:1px solid #e5e7eb;padding:10px 12px">
+          <div style="font-size:11px;color:#6b7280;text-transform:uppercase">Buget</div>
+          <div style="font-size:18px;font-weight:600">{{TOT_BUGET}}</div>
+        </div></td>
+      <td width="25%" valign="top" style="padding:0 6px">
+        <div style="border:1px solid #e5e7eb;padding:10px 12px">
+          <div style="font-size:11px;color:#6b7280;text-transform:uppercase">Realizat</div>
+          <div style="font-size:18px;font-weight:600">{{TOT_REALIZAT}}</div>
+        </div></td>
+      <td width="25%" valign="top" style="padding:0 6px">
+        <div style="border:1px solid #e5e7eb;padding:10px 12px">
+          <div style="font-size:11px;color:#6b7280;text-transform:uppercase">Varianță</div>
+          <div style="font-size:18px;font-weight:600;color:{{TOT_VAR_CULOARE}}">{{TOT_VAR_PCT}}</div>
+        </div></td>
+      <td width="25%" valign="top" style="padding:0 0 0 6px">
+        <div style="border:1px solid #e5e7eb;padding:10px 12px">
+          <div style="font-size:11px;color:#6b7280;text-transform:uppercase">Fără cerere aprobată</div>
+          <div style="font-size:18px;font-weight:600;color:{{TOT_MAV_CULOARE}}">{{TOT_MAVERICK}}</div>
+        </div></td>
+    </tr></table>
+    <div style="font-size:11px;color:#6b7280;padding-top:6px">Sume în RON. Varianța = Realizat − Buget, raportată la buget.</div>
+  </td></tr>
+
+  <!-- 2. Import summary -->
+  <tr><td style="padding:16px 24px 0">
+    <div style="font-size:15px;font-weight:600;padding-bottom:6px;border-bottom:2px solid #1e3a8a">Sumar import</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;margin-top:8px">
+      <tr>
+        <td style="padding:4px 0;color:#4b5563">Înregistrări în fișier</td><td align="right" style="padding:4px 16px 4px 0"><b>{{N_TOTAL}}</b></td>
+        <td style="padding:4px 0 4px 16px;color:#4b5563;border-left:1px solid #e5e7eb">Analize AI reușite</td><td align="right" style="padding:4px 0"><b>{{N_AI_OK}}</b></td>
+      </tr>
+      <tr>
+        <td style="padding:4px 0;color:#4b5563">Valide (salvate)</td><td align="right" style="padding:4px 16px 4px 0"><b style="color:#15803d">{{N_VALIDE}}</b></td>
+        <td style="padding:4px 0 4px 16px;color:#4b5563;border-left:1px solid #e5e7eb">Analize AI eșuate</td><td align="right" style="padding:4px 0"><b>{{N_AI_ESEC}}</b></td>
+      </tr>
+      <tr>
+        <td style="padding:4px 0;color:#4b5563">Invalide</td><td align="right" style="padding:4px 16px 4px 0"><b style="color:#b42318">{{N_INVALIDE}}</b></td>
+        <td style="padding:4px 0 4px 16px;color:#4b5563;border-left:1px solid #e5e7eb">Duplicate ignorate</td><td align="right" style="padding:4px 0"><b style="color:#b45309">{{N_DUPLICATE}}</b></td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <!-- 3. Budget vs. Actual by cost centre -->
+  <tr><td style="padding:20px 24px 0">
+    <div style="font-size:15px;font-weight:600;padding-bottom:6px;border-bottom:2px solid #1e3a8a">Buget vs. Realizat pe centre de cost</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;margin-top:8px;border-collapse:collapse">
+      <tr style="background:#f9fafb;color:#4b5563;font-size:12px">
+        <th align="left" style="padding:8px">CC</th>
+        <th align="right" style="padding:8px">Buget</th>
+        <th align="right" style="padding:8px">Realizat</th>
+        <th align="right" style="padding:8px">Varianță</th>
+        <th align="right" style="padding:8px">%</th>
+        <th align="right" style="padding:8px">Fără cerere</th>
+        <th align="center" style="padding:8px">Regulă</th>
+        <th align="center" style="padding:8px">AI</th>
+      </tr>
+      {{ROWS_CC}}
+    </table>
+    <div style="font-size:11px;color:#6b7280;padding-top:6px">Regulă: |varianță| ≤ 5% Verde, ≤ {{PRAG_ALERTA}}% Galben, peste Roșu. AI: aceeași regulă, plus cel puțin Galben dacă există cheltuieli fără cerere aprobată.</div>
+  </td></tr>
+
+  <!-- 4. AI commentary -->
+  <tr><td style="padding:20px 24px 0">
+    <div style="font-size:15px;font-weight:600;padding-bottom:6px;border-bottom:2px solid #1e3a8a">Comentariile analistului AI</div>
+    {{BLOCURI_AI}}
+  </td></tr>
+
+  <!-- 5. Anomalies -->
+  <tr><td style="padding:20px 24px 0">
+    <div style="font-size:15px;font-weight:600;padding-bottom:6px;border-bottom:2px solid #1e3a8a">Anomalii</div>
+    <div style="font-size:13px;font-weight:600;margin:10px 0 4px">Cheltuieli fără cerere aprobată (maverick spending)</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;border-collapse:collapse">
+      <tr style="background:#f9fafb;color:#4b5563;font-size:12px">
+        <th align="left" style="padding:6px 8px">Cheie</th>
+        <th align="right" style="padding:6px 8px">Realizat</th>
+        <th align="right" style="padding:6px 8px">Aprobat prin cereri</th>
+        <th align="right" style="padding:6px 8px">Fără cerere</th>
+      </tr>
+      {{ROWS_MAVERICK}}
+    </table>
+    <div style="font-size:13px;font-weight:600;margin:16px 0 4px">Înregistrări respinse la import</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;border-collapse:collapse">
+      <tr style="background:#f9fafb;color:#4b5563;font-size:12px">
+        <th align="left" style="padding:6px 8px;width:48px">Rând</th>
+        <th align="left" style="padding:6px 8px;width:150px">Tip</th>
+        <th align="left" style="padding:6px 8px">Detalii</th>
+      </tr>
+      {{ROWS_ERORI}}
+    </table>
+  </td></tr>
+
+  <!-- 6. Footer -->
+  <tr><td style="padding:24px;font-size:11px;color:#9ca3af">
+    Raport generat automat de BudgetGuard la {{DATA_RAPORT}}. Datele detaliate sunt în listele SharePoint Realizat_Lunar, Analize_AI și Erori_Import. Comentariile AI sunt orientative; rândurile marcate „necesită revizuire” au o alertă AI diferită de regula de calcul.
+  </td></tr>
+
+</table>
+</td></tr>
+</table>

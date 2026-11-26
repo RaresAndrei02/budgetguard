@@ -406,8 +406,8 @@ def build_flux1() -> Model:
 
     # registration + validation
     m.node("Task_Inregistrare", "serviceTask", "Înregistrează cererea (ID PR-…, status Nouă)", cx(1), ROW1, P, S)
-    m.node("Task_ANAF", "serviceTask", "Validează furnizorul la ANAF (V1, V2, W3)", cx(2), ROW1, P, S)
-    m.node("Task_BNR", "serviceTask", "Obține cursul BNR, calculează Valoare_RON (V3)", cx(3), ROW1, P, S)
+    m.node("Task_ANAF", "serviceTask", "Validează furnizorul la ANAF (V1, V2, V2b, W3)", cx(2), ROW1, P, S)
+    m.node("Task_BNR", "serviceTask", "Curs BNR (rezervă: W4), calculează Valoare_RON (V3)", cx(3), ROW1, P, S)
     m.node("Task_VerificaBuget", "serviceTask", "Verifică data și bugetul (V4, V5, W1, W2)", cx(4), ROW1, P, S)
     m.node("Gateway_DateValide", "exclusiveGateway", "Date valide?", cx(5), ROW1, P, S, label=("above",))
     m.node("Task_StatusInAprobare", "serviceTask", "Setează status „În aprobare”", cx(6), ROW1, P, S)
@@ -428,7 +428,7 @@ def build_flux1() -> Model:
         m.node(f"User_Aprobare{k}", "userTask", name, cx(c), mid(lane), P, lane)
         lab = ("right", 60) if k in ("1", "2") else ("below",)
         m.node(f"Gateway_Aprobat{k}", "exclusiveGateway", "Aprobat?", cx(c + 1), mid(lane), P, lane, label=lab)
-    m.node("Gateway_PesteBuget", "exclusiveGateway", "Peste buget?", cx(14), ROW1, P, S, label=("above",))
+    m.node("Gateway_PesteBuget", "exclusiveGateway", "Peste buget sau > prag CFO?", cx(14), ROW1, P, S, label=("above",))
     m.node("User_Aprobare4", "userTask", "Aprobare pas 4 – CFO", cx(15), mid("Lane_CFO"), P, "Lane_CFO")
     m.node("Gateway_Aprobat4", "exclusiveGateway", "Aprobat?", cx(16), mid("Lane_CFO"), P, "Lane_CFO")
 
@@ -510,7 +510,7 @@ def build_flux2() -> Model:
     m = Model("Definitions_Flux2")
     P = "Process_Flux2"
     m.processes.append(P)
-    m.errors += [("Error_Import", "Fișier ilizibil sau fără înregistrări", "IMPORT_INVALID"),
+    m.errors += [("Error_Import", "Fișier ilizibil, fără înregistrări sau eroare la import", "IMPORT_INVALID"),
                  ("Error_AI", "Eroare la apelul AI (HTTP / timeout / JSON invalid)", "AI_FAILED")]
 
     POOL_X, POOL_Y = 150, 150
@@ -547,7 +547,7 @@ def build_flux2() -> Model:
     m.node("Start_FisierNou", "startEvent", "Fișier JSON nou în Import_Realizat", xs["start"], YM, P, body=[cond])
     m.node("Task_CitesteFisier", "serviceTask", "Citește și parsează fișierul JSON", xs["read"], YM, P)
     m.node("Gateway_Lizibil", "exclusiveGateway", "Fișier lizibil?", xs["gw"], YM, P, label=("above",))
-    m.node("Send_NotifEsec", "sendTask", "Notifică eșecul importului (email)", xs["gw"], ROW2, P)
+    m.node("Send_NotifEsec", "sendTask", "Notifică eșecul importului (email + Teams)", xs["gw"], ROW2, P)
     m.node("End_ImportEsuat", "endEvent", "Import eșuat", xs["gw"] + 130, ROW2, P, body=[error_def("Import", "Error_Import")])
     m.node("Task_Referinte", "serviceTask", "Încarcă nomenclatorul și cursul BNR", xs["ref"], YM, P)
 
@@ -584,7 +584,7 @@ def build_flux2() -> Model:
     c = icx(sp2.x)
     SP2 = sp2.id
     m.node("SA_Start", "startEvent", "", c[0], YM, SP2)
-    m.node("SA_Varianta", "serviceTask", "Calculează totaluri, varianță și alerta (regulă)", c[1], YM, SP2)
+    m.node("SA_Varianta", "serviceTask", "Calculează și salvează totaluri, varianță, alertă (regulă)", c[1], YM, SP2)
     m.node("SA_AnalizaAI", "serviceTask", "Analiză AI (Groq)", c[2], YM, SP2)
     ai = m.nodes["SA_AnalizaAI"]
     m.node("SA_EroareAI", "boundaryEvent", "Eroare AI", ai.cx, ai.y + ai.h, SP2,
@@ -647,7 +647,7 @@ def build_flux2() -> Model:
     )
     m.annotation(
         "Annotation_AI",
-        "Scope AI_Try / AI_Catch: un eșec al AI nu oprește importul; raportul se trimite oricum.",
+        "Scope AI_Try / AI_Catch: calculele se salvează înainte de apel; un eșec al AI nu oprește importul, raportul se trimite oricum.",
         sp2_x + 100, ROW2 - 30, 300, 60, P, target=SP2, target_port=("b", -250),
     )
     return m

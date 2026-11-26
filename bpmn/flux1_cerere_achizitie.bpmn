@@ -66,11 +66,11 @@
       <bpmn:outgoing>Flow_Task_Inregistrare_Task_ANAF</bpmn:outgoing>
       <bpmn:dataOutputAssociation id="DataOut_Task_Inregistrare_Store_Cereri1"><bpmn:targetRef>Store_Cereri1</bpmn:targetRef></bpmn:dataOutputAssociation>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Task_ANAF" name="Valideaza furnizorul la ANAF (V1, V2, W3)">
+    <bpmn:serviceTask id="Task_ANAF" name="Valideaza furnizorul la ANAF (V1, V2, V2b, W3)">
       <bpmn:incoming>Flow_Task_Inregistrare_Task_ANAF</bpmn:incoming>
       <bpmn:outgoing>Flow_Task_ANAF_Task_BNR</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Task_BNR" name="Obtine cursul BNR, calculeaza Valoare_RON (V3)">
+    <bpmn:serviceTask id="Task_BNR" name="Curs BNR (rezerva: W4), calculeaza Valoare_RON (V3)">
       <bpmn:incoming>Flow_Task_ANAF_Task_BNR</bpmn:incoming>
       <bpmn:outgoing>Flow_Task_BNR_Task_VerificaBuget</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -131,7 +131,7 @@
       <bpmn:outgoing>Flow_Gateway_Aprobat3_Gateway_PesteBuget</bpmn:outgoing>
       <bpmn:outgoing>Flow_Gateway_Aprobat3_Gateway_MergeRespins</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:exclusiveGateway id="Gateway_PesteBuget" name="Peste buget?">
+    <bpmn:exclusiveGateway id="Gateway_PesteBuget" name="Peste buget sau &gt; prag CFO?">
       <bpmn:incoming>Flow_Gateway_Aprobat3_Gateway_PesteBuget</bpmn:incoming>
       <bpmn:outgoing>Flow_Gateway_PesteBuget_User_Aprobare4</bpmn:outgoing>
       <bpmn:outgoing>Flow_Gateway_PesteBuget_Gateway_MergeAprobat</bpmn:outgoing>

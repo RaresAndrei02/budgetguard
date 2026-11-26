@@ -1,0 +1,32 @@
+{
+  "sursa": "ERP Vestra – export cheltuieli realizate",
+  "luna": "2026-10",
+  "generat_la": "2026-11-03T08:15:00",
+  "inregistrari": [
+    {
+      "rand": 1,
+      "luna": "2026-10",
+      "centru_cost": "IT",
+      "categorie": "SW",
+      "suma": 51750.0
+      "moneda": "RON",
+      "nr_documente": 8
+    },
+    {
+      "rand": 2,
+      "luna": "2026-10",
+      "centru_cost": "IT",
+      "categorie": "HW",
+      "suma": 45000.0,
+      "moneda": "RON",
+      "nr_documente": 10
+    },
+    {
+      "rand": 3,
+      "luna": "2026-10",
+      "centru_cost": "MKT",
+      "categorie": "SRV",
+      "suma": 26250.0,
+      "moneda": "RON",
+      "nr_documente": 4
+   
