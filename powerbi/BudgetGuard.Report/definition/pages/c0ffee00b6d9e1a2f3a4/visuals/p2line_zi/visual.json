@@ -28,6 +28,7 @@
               },
               "queryRef": "Calendar.Date",
               "nativeQueryRef": "Date",
+              "active": true,
               "displayName": "Data"
             }
           ]
@@ -53,7 +54,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "objects": {
       "dataPoint": [
         {
@@ -97,6 +97,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

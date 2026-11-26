@@ -65,3 +65,4 @@ relationship c86049ce-e7e7-f922-a01c-6db5bb6d48d7
 relationship 98c3a505-fa64-4671-a4fd-24cb91af32c3
 	fromColumn: Analize.CentruCost
 	toColumn: CC.CC
+

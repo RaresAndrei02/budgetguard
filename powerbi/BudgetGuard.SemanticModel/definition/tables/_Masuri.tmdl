@@ -1,9 +1,6 @@
 table _Masuri
 	lineageTag: a00a6c37-fb18-4bcc-90f0-2a79f124b453
 
-	measure 'Maverick culoare' = IF ( [Maverick] > 0, "#fee4e2" )
-		lineageTag: 3d15b2f9-97a9-48a3-bece-67d1e919704c
-
 	measure Buget = ```
 			SUM ( Bugete[Buget_RON] )
 			    
@@ -177,6 +174,9 @@ table _Masuri
 			```
 		formatString: 0.0%;-0.0%;0.0%
 		lineageTag: 83f50883-221f-4ebf-80da-13695c56955c
+
+	measure 'Maverick culoare' = IF ( [Maverick] > 0, "#fee4e2" )
+		lineageTag: 3d15b2f9-97a9-48a3-bece-67d1e919704c
 
 	column Column1
 		dataType: string

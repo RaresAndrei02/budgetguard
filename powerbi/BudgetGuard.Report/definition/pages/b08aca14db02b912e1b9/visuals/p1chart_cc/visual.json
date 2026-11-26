@@ -28,6 +28,7 @@
               },
               "queryRef": "CC.CC",
               "nativeQueryRef": "CC",
+              "active": true,
               "displayName": "Centru de cost"
             }
           ]
@@ -80,7 +81,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "objects": {
       "dataPoint": [
         {
@@ -160,6 +160,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

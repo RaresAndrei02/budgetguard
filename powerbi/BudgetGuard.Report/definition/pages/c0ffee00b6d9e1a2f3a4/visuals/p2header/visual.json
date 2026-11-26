@@ -5,7 +5,7 @@
     "x": 0,
     "y": 0,
     "z": 0,
-    "height": 56,
+    "height": 66.220328667072422,
     "width": 1280,
     "tabOrder": 0
   },
@@ -21,18 +21,18 @@
                   {
                     "value": "BudgetGuard",
                     "textStyle": {
-                      "fontSize": "16pt",
-                      "color": "#ffffff",
+                      "fontWeight": "bold",
                       "fontFamily": "Segoe UI Semibold",
-                      "fontWeight": "bold"
+                      "fontSize": "16pt",
+                      "color": "#ffffff"
                     }
                   },
                   {
                     "value": "   ·   Pipeline aprobări",
                     "textStyle": {
+                      "fontFamily": "Segoe UI",
                       "fontSize": "16pt",
-                      "color": "#ffffff",
-                      "fontFamily": "Segoe UI"
+                      "color": "#ffffff"
                     }
                   }
                 ]
@@ -42,9 +42,9 @@
                   {
                     "value": "Cereri de achiziție: status, volum, timp de aprobare și respingeri  ·  sursa: lista SharePoint Cereri_Achizitie",
                     "textStyle": {
+                      "fontFamily": "Segoe UI",
                       "fontSize": "9pt",
-                      "color": "#c7d2fe",
-                      "fontFamily": "Segoe UI"
+                      "color": "#c7d2fe"
                     }
                   }
                 ]

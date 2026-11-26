@@ -13,25 +13,6 @@
     "visualType": "pivotTable",
     "query": {
       "queryState": {
-        "Rows": {
-          "projections": [
-            {
-              "field": {
-                "Column": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "CC"
-                    }
-                  },
-                  "Property": "CC"
-                }
-              },
-              "queryRef": "CC.CC",
-              "nativeQueryRef": "CC",
-              "displayName": "CC"
-            }
-          ]
-        },
         "Columns": {
           "projections": [
             {
@@ -47,7 +28,28 @@
               },
               "queryRef": "CAT.CAT",
               "nativeQueryRef": "CAT",
+              "active": true,
               "displayName": "Categorie"
+            }
+          ]
+        },
+        "Rows": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "CC"
+                    }
+                  },
+                  "Property": "CC"
+                }
+              },
+              "queryRef": "CC.CC",
+              "nativeQueryRef": "CC",
+              "active": true,
+              "displayName": "CC"
             }
           ]
         },
@@ -72,7 +74,6 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true,
     "objects": {
       "values": [
         {
@@ -128,6 +129,7 @@
           }
         }
       ]
-    }
+    },
+    "drillFilterOtherVisuals": true
   }
 }

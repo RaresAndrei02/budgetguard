@@ -2,8 +2,565 @@ cultureInfo en-US
 
 	linguisticMetadata =
 			{
-			  "Version": "1.0.0",
-			  "Language": "en-US"
+			  "Version": "2.0.0",
+			  "Language": "en-US",
+			  "Entities": {
+			    "table_masuri.buget": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Masuri",
+			          "ConceptualProperty": "Buget"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Buget (RON)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_masuri.maverick": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Masuri",
+			          "ConceptualProperty": "Maverick"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Fără cerere aprobată (RON)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Fără cerere": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_masuri.realizat": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Masuri",
+			          "ConceptualProperty": "Realizat"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Realizat (RON)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_masuri.varianta_": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Masuri",
+			          "ConceptualProperty": "Varianta %"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Varianță față de buget": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "Varianță": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_masuri.alerta": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Masuri",
+			          "ConceptualProperty": "Alerta"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Alertă": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_masuri.cereri_aprobate": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Masuri",
+			          "ConceptualProperty": "Cereri aprobate"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Aprobate": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_masuri.cereri_respinse": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Masuri",
+			          "ConceptualProperty": "Cereri respinse"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Respinse": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_masuri.nr_cereri": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Masuri",
+			          "ConceptualProperty": "Nr cereri"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Cereri": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_masuri.rata_respingere": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Masuri",
+			          "ConceptualProperty": "Rata respingere"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Rată de respingere": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_masuri.timp_mediu_aprobare_ore": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Masuri",
+			          "ConceptualProperty": "Timp mediu aprobare (ore)"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Timp mediu de aprobare (ore)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "table_masuri.valoare_aprobata": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "_Masuri",
+			          "ConceptualProperty": "Valoare aprobata"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Valoare aprobată (RON)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "cc.cc": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "CC",
+			          "ConceptualProperty": "CC"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Centru de cost": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        },
+			        {
+			          "CC": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "cat.cat": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "CAT",
+			          "ConceptualProperty": "CAT"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Categorie": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "analize.centrucost": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Analize",
+			          "ConceptualProperty": "CentruCost"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "CC": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "analize.alerta_regula": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Analize",
+			          "ConceptualProperty": "Alerta_Regula"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Regulă": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "analize.alerta_ai": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Analize",
+			          "ConceptualProperty": "Alerta_AI"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "AI": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "analize.necesita_revizuire": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Analize",
+			          "ConceptualProperty": "Necesita_Revizuire"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Revizuire": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "analize.comentariu_ai": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Analize",
+			          "ConceptualProperty": "Comentariu_AI"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Comentariul analistului AI": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "calendar.date": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Calendar",
+			          "ConceptualProperty": "Date"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Data": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "cereri.title": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Cereri",
+			          "ConceptualProperty": "Title"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "ID cerere": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "cereri.titlucerere": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Cereri",
+			          "ConceptualProperty": "TitluCerere"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Titlu": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "cereri.centrucost": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Cereri",
+			          "ConceptualProperty": "CentruCost"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "CC": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "cereri.valoare_ron": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Cereri",
+			          "ConceptualProperty": "Valoare_RON"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Valoare (RON)": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "cereri.peste_buget": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Cereri",
+			          "ConceptualProperty": "Peste_Buget"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Peste buget": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    },
+			    "cereri.data_cerere": {
+			      "Definition": {
+			        "Binding": {
+			          "ConceptualEntity": "Cereri",
+			          "ConceptualProperty": "Data_Cerere"
+			        }
+			      },
+			      "State": "Generated",
+			      "Terms": [
+			        {
+			          "Data cererii": {
+			            "State": "Suggested",
+			            "Source": {
+			              "Type": "External",
+			              "Agent": "PowerBI.VisualColumnRename"
+			            },
+			            "Weight": 0.9
+			          }
+			        }
+			      ]
+			    }
+			  }
 			}
 		contentType: json
 

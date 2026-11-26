@@ -52,5 +52,5 @@ Deschide iterația roșie → `HTTP_SP` → **Outputs** și trimite mesajul de e
 |---|---|
 | `A list, survey, discussion board, or document library with the specified title already exists` | rularea a fost repetată: lista există deja, poți ignora |
 | `A duplicate field name "..." was found` | coloana există deja, poți ignora |
-| `The property '__metadata' does not exist` sau `type` necunoscut, la rularea 2 | site-ul nu acceptă `odata=nometadata`. Claude regenerează `seed_requests.json` cu tipurile de entitate |
+| `The property '__metadata' does not exist` sau `type` necunoscut, la rularea 2 | site-ul nu acceptă `odata=nometadata`. se regenerează `seed_requests.json` cu tipurile de entitate (`python sharepoint/build_requests.py`) |
 | `Access denied` | contul nu e proprietar al site-ului |
