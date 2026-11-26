@@ -1,0 +1,208 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.3.0/schema.json",
+  "name": "p1table_ai",
+  "position": {
+    "x": 440,
+    "y": 440,
+    "z": 8000,
+    "height": 270,
+    "width": 830,
+    "tabOrder": 8000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Analize"
+                    }
+                  },
+                  "Property": "CentruCost"
+                }
+              },
+              "queryRef": "Analize.CentruCost",
+              "nativeQueryRef": "CentruCost",
+              "displayName": "CC"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Analize"
+                    }
+                  },
+                  "Property": "Alerta_Regula"
+                }
+              },
+              "queryRef": "Analize.Alerta_Regula",
+              "nativeQueryRef": "Alerta_Regula",
+              "displayName": "Regulă"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Analize"
+                    }
+                  },
+                  "Property": "Alerta_AI"
+                }
+              },
+              "queryRef": "Analize.Alerta_AI",
+              "nativeQueryRef": "Alerta_AI",
+              "displayName": "AI"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Analize"
+                    }
+                  },
+                  "Property": "Necesita_Revizuire"
+                }
+              },
+              "queryRef": "Analize.Necesita_Revizuire",
+              "nativeQueryRef": "Necesita_Revizuire",
+              "displayName": "Revizuire"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Analize"
+                    }
+                  },
+                  "Property": "Comentariu_AI"
+                }
+              },
+              "queryRef": "Analize.Comentariu_AI",
+              "nativeQueryRef": "Comentariu_AI",
+              "displayName": "Comentariul analistului AI"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "values": [
+        {
+          "properties": {
+            "wordWrap": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnWidth": [
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "50D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Analize.CentruCost"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "70D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Analize.Alerta_Regula"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "70D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Analize.Alerta_AI"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "80D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Analize.Necesita_Revizuire"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "520D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "Analize.Comentariu_AI"
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Analiza AI pe centre de cost'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "properties": {
+    "connectionReferences": {},
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "GroqApiKey (bg_GroqApiKey)": {
+          "defaultValue": "",
+          "type": "String",
+          "metadata": {
+            "schemaName": "bg_GroqApiKey"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "b48b5812-d600-4b19-b537-de61bc0bacfe"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          }
+        }
+      },
+      "actions": {
+        "HTTP_ANAF": {
+          "runAfter": {},
+          "type": "Http",
+          "inputs": {
+            "uri": "https://webservicesp.anaf.ro/api/PlatitorTvaRest/v9/tva",
+            "method": "POST",
+            "headers": {
+              "Content-Type": "application/json"
+            },
+            "body": [
+              {
+                "cui": 2816464,
+                "data": "2026-11-19"
+              },
+              {
+                "cui": 99999999,
+                "data": "2026-11-19"
+              }
+            ]
+          }
+        },
+        "HTTP_BNR": {
+          "runAfter": {
+            "HTTP_ANAF": [
+              "Succeeded"
+            ]
+          },
+          "type": "Http",
+          "inputs": {
+            "uri": "https://curs.bnr.ro/nbrfxrates.xml",
+            "method": "GET"
+          }
+        },
+        "Compose": {
+          "runAfter": {
+            "HTTP_BNR": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@float(xpath(xml(body('HTTP_BNR')), 'string(//*[local-name()=''Rate''][@currency=''EUR''])'))"
+        },
+        "HTTP_Groq": {
+          "runAfter": {
+            "Compose": [
+              "Succeeded"
+            ]
+          },
+          "type": "Http",
+          "inputs": {
+            "uri": "https://api.groq.com/openai/v1/chat/completions",
+            "method": "POST",
+            "headers": {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer @{parameters('GroqApiKey (bg_GroqApiKey)')}"
+            },
+            "body": {
+              "model": "openai/gpt-oss-120b",
+              "temperature": 0.2,
+              "response_format": {
+                "type": "json_object"
+              },
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "Răspunde EXCLUSIV cu un obiect JSON valid cu cheile: comentariu (string), nivel_alerta (Verde|Galben|Roșu)."
+                },
+                {
+                  "role": "user",
+                  "content": "{\"centru_cost\":\"IT\",\"buget_ron\":100000,\"realizat_ron\":118000}"
+                }
+              ]
+            }
+          },
+          "runtimeConfiguration": {
+            "secureData": {
+              "properties": [
+                "inputs",
+                "outputs"
+              ]
+            }
+          }
+        },
+        "AI_Content": {
+          "runAfter": {
+            "HTTP_Groq": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": "@json(body('HTTP_Groq')?['choices']?[0]?['message']?['content'])"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

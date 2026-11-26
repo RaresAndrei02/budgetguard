@@ -1,0 +1,150 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.3.0/schema.json",
+  "name": "p2table_cereri",
+  "position": {
+    "x": 10,
+    "y": 430,
+    "z": 8000,
+    "height": 280,
+    "width": 1260,
+    "tabOrder": 8000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cereri"
+                    }
+                  },
+                  "Property": "Title"
+                }
+              },
+              "queryRef": "Cereri.Title",
+              "nativeQueryRef": "Title",
+              "displayName": "ID cerere"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cereri"
+                    }
+                  },
+                  "Property": "TitluCerere"
+                }
+              },
+              "queryRef": "Cereri.TitluCerere",
+              "nativeQueryRef": "TitluCerere",
+              "displayName": "Titlu"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cereri"
+                    }
+                  },
+                  "Property": "CentruCost"
+                }
+              },
+              "queryRef": "Cereri.CentruCost",
+              "nativeQueryRef": "CentruCost",
+              "displayName": "CC"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cereri"
+                    }
+                  },
+                  "Property": "Valoare_RON"
+                }
+              },
+              "queryRef": "Cereri.Valoare_RON",
+              "nativeQueryRef": "Valoare_RON",
+              "displayName": "Valoare (RON)"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cereri"
+                    }
+                  },
+                  "Property": "Status"
+                }
+              },
+              "queryRef": "Cereri.Status",
+              "nativeQueryRef": "Status"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cereri"
+                    }
+                  },
+                  "Property": "Peste_Buget"
+                }
+              },
+              "queryRef": "Cereri.Peste_Buget",
+              "nativeQueryRef": "Peste_Buget",
+              "displayName": "Peste buget"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Cereri"
+                    }
+                  },
+                  "Property": "Data_Cerere"
+                }
+              },
+              "queryRef": "Cereri.Data_Cerere",
+              "nativeQueryRef": "Data_Cerere",
+              "displayName": "Data cererii"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Cereri de achiziție'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

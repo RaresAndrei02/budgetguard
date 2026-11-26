@@ -1,0 +1,396 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "bg_sharedsharepointonline_14880"
+        },
+        "runtimeSource": "invoker"
+      },
+      "shared_gmail": {
+        "api": {
+          "name": "shared_gmail"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "bg_sharedgmail_86357"
+        },
+        "runtimeSource": "invoker"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "title": "DataDe",
+                  "type": "string",
+                  "format": "date",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter or select a date (YYYY-MM-DD)",
+                  "x-ms-content-hint": "DATE"
+                },
+                "date_1": {
+                  "title": "DataPana",
+                  "type": "string",
+                  "format": "date",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter or select a date (YYYY-MM-DD)",
+                  "x-ms-content-hint": "DATE"
+                },
+                "text": {
+                  "title": "CentruCost",
+                  "type": "string",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter your input",
+                  "x-ms-content-hint": "TEXT"
+                },
+                "text_1": {
+                  "title": "Categorie",
+                  "type": "string",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter your input",
+                  "x-ms-content-hint": "TEXT"
+                },
+                "text_2": {
+                  "title": "Format",
+                  "type": "string",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter your input",
+                  "x-ms-content-hint": "TEXT",
+                  "enum": [
+                    "CSV",
+                    "JSON"
+                  ]
+                }
+              },
+              "required": [
+                "date",
+                "date_1",
+                "text_2"
+              ]
+            }
+          },
+          "metadata": {
+            "operationMetadataId": "4673c50d-35f1-4d9b-94ec-7077305750a9"
+          }
+        }
+      },
+      "actions": {
+        "Parametri": {
+          "type": "Compose",
+          "inputs": {
+            "de": "@{triggerBody()?['date']}",
+            "pana": "@{triggerBody()?['date_1']}",
+            "cc": "@{triggerBody()?['text']}",
+            "cat": "@{triggerBody()?['text_1']}",
+            "format": "@{triggerBody()?['text_2']}",
+            "utilizator": "@{triggerOutputs()?['headers']?['x-ms-user-email']}"
+          },
+          "runAfter": {}
+        },
+        "Filtru": {
+          "type": "Compose",
+          "inputs": "@concat('Status eq ''Aprobată'' and Data_Cerere ge ''', outputs('Parametri')?['de'], 'T00:00:00Z'' and Data_Cerere le ''', outputs('Parametri')?['pana'], 'T23:59:59Z''', if(empty(trim(coalesce(outputs('Parametri')?['cc'], ''))), '', concat(' and CentruCost eq ''', toUpper(trim(outputs('Parametri')?['cc'])), '''')), if(empty(trim(coalesce(outputs('Parametri')?['cat'], ''))), '', concat(' and Categorie eq ''', toUpper(trim(outputs('Parametri')?['cat'])), '''')))",
+          "runAfter": {
+            "Parametri": [
+              "SUCCEEDED"
+            ]
+          }
+        },
+        "Get_Aprobate": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+              "table": "e9f4ad2f-dacc-46ca-a60e-7333277cfdf4",
+              "$filter": "@outputs('Filtru')",
+              "$orderby": "Data_Cerere asc",
+              "$top": 500
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runAfter": {
+            "Filtru": [
+              "SUCCEEDED"
+            ]
+          }
+        },
+        "Cond_Gol": {
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@empty(outputs('Get_Aprobate')?['body/value'])",
+                  "@true"
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Html_Gol": {
+              "type": "Compose",
+              "inputs": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#222;max-width:640px\">\n  <div style=\"background:#475467;color:#fff;padding:12px 16px;font-size:16px;font-weight:600\">BudgetGuard · Export fără rezultate</div>\n  <div style=\"padding:16px;border:1px solid #ddd;border-top:none\">\n    <p>Nicio cerere aprobată în intervalul selectat.</p>\n    <p style=\"font-size:13px;color:#666\">Interval: @{formatDateTime(outputs('Parametri')?['de'], 'dd.MM.yyyy')} – @{formatDateTime(outputs('Parametri')?['pana'], 'dd.MM.yyyy')} · centru de cost: @{if(empty(outputs('Parametri')?['cc']), 'toate', outputs('Parametri')?['cc'])} · categorie: @{if(empty(outputs('Parametri')?['cat']), 'toate', outputs('Parametri')?['cat'])}</p>\n    <p style=\"font-size:13px;color:#666\">Cererile exportate anterior au statusul „Exportată” și nu mai sunt incluse.</p>\n    <p style=\"font-size:12px;color:#888\">Mesaj automat BudgetGuard · @{convertTimeZone(utcNow(), 'UTC', 'GTB Standard Time', 'dd.MM.yyyy HH:mm')}</p>\n  </div>\n</div>"
+            },
+            "Email_Gol": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "emailMessage/To": "@outputs('Parametri')?['utilizator']",
+                  "emailMessage/Subject": "[BudgetGuard] Export – nicio cerere aprobată în interval",
+                  "emailMessage/Body": "<p class=\"editor-paragraph\">@{outputs('Html_Gol')}</p>"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_gmail",
+                  "operationId": "SendEmailV2",
+                  "connectionName": "shared_gmail"
+                }
+              },
+              "runAfter": {
+                "Html_Gol": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Terminate_Gol": {
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Succeeded"
+              },
+              "runAfter": {
+                "Email_Gol": [
+                  "SUCCEEDED"
+                ]
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Select_Export": {
+                "type": "Select",
+                "inputs": {
+                  "from": "@outputs('Get_Aprobate')?['body/value']",
+                  "select": {
+                    "ID_Cerere": "@item()?['Title']",
+                    "Titlu": "@item()?['TitluCerere']",
+                    "CentruCost": "@item()?['CentruCost']",
+                    "Categorie": "@item()?['Categorie']",
+                    "Luna_Buget": "@item()?['Luna_Buget']",
+                    "Tip": "@item()?['Tip']?['Value']",
+                    "CUI": "@item()?['CUI']",
+                    "Furnizor": "@item()?['Furnizor_ANAF']",
+                    "Valoare": "@item()?['Valoare']",
+                    "Moneda": "@item()?['Moneda']?['Value']",
+                    "Curs_BNR": "@item()?['Curs_BNR']",
+                    "Valoare_RON": "@item()?['Valoare_RON']",
+                    "Peste_Buget": "@item()?['Peste_Buget']",
+                    "Data_Necesara": "@formatDateTime(item()?['Data_Necesara'], 'yyyy-MM-dd')",
+                    "Data_Cerere": "@formatDateTime(item()?['Data_Cerere'], 'yyyy-MM-dd HH:mm')",
+                    "Data_Aprobare": "@if(empty(item()?['Data_Finalizare']), '', formatDateTime(item()?['Data_Finalizare'], 'yyyy-MM-dd HH:mm'))",
+                    "Solicitant": "@item()?['Solicitant_Email']"
+                  }
+                }
+              },
+              "Create_CSV": {
+                "type": "Table",
+                "inputs": {
+                  "from": "@body('Select_Export')",
+                  "format": "CSV"
+                },
+                "runAfter": {
+                  "Select_Export": [
+                    "SUCCEEDED"
+                  ]
+                }
+              },
+              "Nume_Fisier": {
+                "type": "Compose",
+                "inputs": "@concat('BG_export_', convertTimeZone(utcNow(), 'UTC', 'GTB Standard Time', 'yyyyMMdd_HHmm'), '.', toLower(outputs('Parametri')?['format']))",
+                "runAfter": {
+                  "Create_CSV": [
+                    "SUCCEEDED"
+                  ]
+                }
+              },
+              "Continut": {
+                "type": "Compose",
+                "inputs": "@if(equals(outputs('Parametri')?['format'], 'JSON'), string(body('Select_Export')), concat(decodeUriComponent('%EF%BB%BF'), body('Create_CSV')))",
+                "runAfter": {
+                  "Nume_Fisier": [
+                    "SUCCEEDED"
+                  ]
+                }
+              },
+              "Get_Link": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                    "table": "1fb38765-e4e2-4615-bab3-f2522bf7c0f3",
+                    "id": "@body('Create_Fisier')?['ItemId']"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "GetFileItem",
+                    "connectionName": "shared_sharepointonline"
+                  }
+                },
+                "runAfter": {
+                  "Create_Fisier": [
+                    "SUCCEEDED"
+                  ]
+                }
+              },
+              "Create_Fisier": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                    "folderPath": "/Exporturi",
+                    "name": "@outputs('Nume_Fisier')",
+                    "body": "@ outputs('Continut')"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "CreateFile",
+                    "connectionName": "shared_sharepointonline"
+                  }
+                },
+                "runAfter": {
+                  "Continut": [
+                    "SUCCEEDED"
+                  ]
+                },
+                "runtimeConfiguration": {
+                  "contentTransfer": {
+                    "transferMode": "Chunked"
+                  }
+                }
+              },
+              "Apply_to_each_Export": {
+                "type": "Foreach",
+                "foreach": "@outputs('Get_Aprobate')?['body/value']",
+                "actions": {
+                  "Upd_Exportata": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                        "table": "e9f4ad2f-dacc-46ca-a60e-7333277cfdf4",
+                        "id": "@ items('Apply_to_each_Export')?['ID']",
+                        "item/Title": "@items('Apply_to_each_Export')?['Title']",
+                        "item/Status/Value": "Exportată"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "PatchItem",
+                        "connectionName": "shared_sharepointonline"
+                      }
+                    }
+                  },
+                  "Log_Export": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                        "table": "ed8c277f-09a0-4732-b257-398199e56f8f",
+                        "item/Title": "@items('Apply_to_each_Export')?['Title']",
+                        "item/Flux/Value": "EXPORT",
+                        "item/Stare_Veche": "Aprobată",
+                        "item/Stare_Noua": "Exportată",
+                        "item/Actor": "@outputs('Parametri')?['utilizator']",
+                        "item/Data_Ora": "@utcNow()",
+                        "item/Comentariu": "@ concat('Inclusă în ', outputs('Nume_Fisier'), '.')"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "PostItem",
+                        "connectionName": "shared_sharepointonline"
+                      }
+                    },
+                    "runAfter": {
+                      "Upd_Exportata": [
+                        "SUCCEEDED"
+                      ]
+                    }
+                  }
+                },
+                "runAfter": {
+                  "Get_Link": [
+                    "SUCCEEDED"
+                  ]
+                }
+              },
+              "Email_Export": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "emailMessage/To": "@outputs('Parametri')?['utilizator']",
+                    "emailMessage/Subject": "[BudgetGuard] Export @{outputs('Parametri')?['format']} – @{length(outputs('Get_Aprobate')?['body/value'])} cereri aprobate",
+                    "emailMessage/Body": "<p class=\"editor-paragraph\">@{outputs('Html_Export')}</p>",
+                    "emailMessage/Attachments": [
+                      {
+                        "Name": "@outputs('Nume_Fisier')",
+                        "ContentBytes": "@outputs('Continut')"
+                      }
+                    ]
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_gmail",
+                    "operationId": "SendEmailV2",
+                    "connectionName": "shared_gmail"
+                  }
+                },
+                "runAfter": {
+                  "Html_Export": [
+                    "SUCCEEDED"
+                  ]
+                }
+              },
+              "Html_Export": {
+                "type": "Compose",
+                "inputs": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#222;max-width:640px\">\n  <div style=\"background:#1d4ed8;color:#fff;padding:12px 16px;font-size:16px;font-weight:600\">BudgetGuard · Export cereri aprobate</div>\n  <div style=\"padding:16px;border:1px solid #ddd;border-top:none\">\n    <p>Exportul este gata: <b>@{length(outputs('Get_Aprobate')?['body/value'])}</b> cereri, format <b>@{outputs('Parametri')?['format']}</b>.</p>\n    <table style=\"border-collapse:collapse;font-size:13px\">\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Interval</td><td>@{formatDateTime(outputs('Parametri')?['de'], 'dd.MM.yyyy')} – @{formatDateTime(outputs('Parametri')?['pana'], 'dd.MM.yyyy')}</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Centru de cost</td><td>@{if(empty(outputs('Parametri')?['cc']), 'toate', outputs('Parametri')?['cc'])}</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Categorie</td><td>@{if(empty(outputs('Parametri')?['cat']), 'toate', outputs('Parametri')?['cat'])}</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Total Valoare_RON</td><td><b>@{formatNumber(float(xpath(xml(json(concat('{\"r\":{\"w\":', string(body('Select_Export')), '}}'))), 'sum(/r/w/Valoare_RON)')), 'N2', 'ro-RO')} RON</b></td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Fișier</td><td><a href=\"@{outputs('Get_Link')?['body/{Link}']}\">@{outputs('Nume_Fisier')}</a></td></tr>\n    </table>\n    <p style=\"font-size:13px;color:#666\">Cererile incluse au acum statusul „Exportată”. CSV-ul se deschide în Excel cu <i>Date → Din text/CSV</i> (delimitator: virgulă).</p>\n    <p style=\"font-size:12px;color:#888\">Mesaj automat BudgetGuard · @{convertTimeZone(utcNow(), 'UTC', 'GTB Standard Time', 'dd.MM.yyyy HH:mm')}</p>\n  </div>\n</div>",
+                "runAfter": {
+                  "Apply_to_each_Export": [
+                    "SUCCEEDED"
+                  ]
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Get_Aprobate": [
+              "SUCCEEDED"
+            ]
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

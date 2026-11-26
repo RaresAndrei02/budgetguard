@@ -1,0 +1,26 @@
+Power Query - one step per table. Click fx, select all in the formula bar, paste ONE line, Enter.
+If the previous step is "Navigation" instead of "Renamed Columns", replace #"Renamed Columns" with Navigation.
+
+Cereri_Achizitie  (rename query to: Cereri)
+= Table.TransformColumnTypes(Table.SelectColumns(#"Renamed Columns", {"Title","TitluCerere","CentruCost","Categorie","Luna_Buget","Valoare_RON","Tip","Peste_Buget","Status","Data_Cerere","Data_Finalizare","Aprobari","Furnizor_ANAF"}, MissingField.UseNull), {{"Valoare_RON", type number}, {"Peste_Buget", type logical}, {"Data_Cerere", type datetime}, {"Data_Finalizare", type datetime}})
+
+Bugete  (keep name)
+= Table.TransformColumnTypes(Table.SelectColumns(#"Renamed Columns", {"Title","Luna","CentruCost","Categorie","Buget_RON","Angajat_RON","Realizat_RON","Ramas_RON"}, MissingField.UseNull), {{"Buget_RON", type number}, {"Angajat_RON", type number}, {"Realizat_RON", type number}, {"Ramas_RON", type number}})
+
+Realizat_Lunar  (keep name)
+= Table.TransformColumnTypes(Table.SelectColumns(#"Renamed Columns", {"Title","Luna","CentruCost","Categorie","Suma_RON","Aprobat_RON","Maverick_RON","Nr_Documente"}, MissingField.UseNull), {{"Suma_RON", type number}, {"Aprobat_RON", type number}, {"Maverick_RON", type number}, {"Nr_Documente", Int64.Type}})
+
+Istoric_Stari  (rename query to: Istoric)
+= Table.TransformColumnTypes(Table.SelectColumns(#"Renamed Columns", {"Title","Flux","Stare_Veche","Stare_Noua","Actor","Data_Ora"}, MissingField.UseNull), {{"Data_Ora", type datetime}})
+
+Analize_AI  (rename query to: Analize)
+= Table.TransformColumnTypes(Table.SelectColumns(#"Renamed Columns", {"Title","Luna","CentruCost","Varianta_Pct","Alerta_Regula","Alerta_AI","Necesita_Revizuire","Status_Analiza","Comentariu_AI"}, MissingField.UseNull), {{"Varianta_Pct", type number}, {"Necesita_Revizuire", type logical}})
+
+Nomenclator  (keep name; afterwards right-click -> untick "Enable load")
+= Table.SelectColumns(#"Renamed Columns", {"Title","Tip","Denumire"}, MissingField.UseNull)
+
+CC  (right-click Nomenclator -> Reference, rename to CC, then fx)
+= Table.RenameColumns(Table.SelectRows(Nomenclator, each [Tip] = "CC"), {{"Title", "CC"}})
+
+CAT  (right-click Nomenclator -> Reference, rename to CAT, then fx)
+= Table.RenameColumns(Table.SelectRows(Nomenclator, each [Tip] = "CAT"), {{"Title", "CAT"}})

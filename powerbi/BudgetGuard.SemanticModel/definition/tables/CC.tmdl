@@ -1,0 +1,39 @@
+table CC
+	lineageTag: 832c41ec-b192-497c-82c1-a3343ae9cd9d
+
+	column CC
+		dataType: string
+		lineageTag: 6033c5ae-7644-4286-910a-98ebcc2f9015
+		summarizeBy: none
+		sourceColumn: CC
+
+		annotation SummarizationSetBy = Automatic
+
+	column Tip
+		dataType: string
+		lineageTag: 357f7e48-4e74-47e1-9f30-6662146a129c
+		summarizeBy: none
+		sourceColumn: Tip
+
+		annotation SummarizationSetBy = Automatic
+
+	column Denumire
+		dataType: string
+		lineageTag: 9465e0ab-48f3-4144-b8b2-500a707e87cb
+		summarizeBy: none
+		sourceColumn: Denumire
+
+		annotation SummarizationSetBy = Automatic
+
+	partition CC = m
+		mode: import
+		source =
+				let
+				    Source = Table.RenameColumns(Table.SelectRows(Nomenclator, each [Tip] = "CC"), {{"Title", "CC"}})
+				in
+				    Source
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

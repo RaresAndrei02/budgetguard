@@ -1,0 +1,60 @@
+// BudgetGuard measures. Paste into Power BI Desktop > DAX query view, then "Update model with changes".
+// Requires an (empty) table named _Masuri (Home > Enter data).
+DEFINE
+    // ---------- Budget vs. actual
+    MEASURE '_Masuri'[Buget] = SUM ( Bugete[Buget_RON] )
+    MEASURE '_Masuri'[Angajat] = SUM ( Bugete[Angajat_RON] )
+    MEASURE '_Masuri'[Realizat] = SUM ( Bugete[Realizat_RON] )
+    MEASURE '_Masuri'[Ramas] = [Buget] - [Angajat]
+    MEASURE '_Masuri'[Varianta] = [Realizat] - [Buget]
+    MEASURE '_Masuri'[Varianta %] = DIVIDE ( [Varianta], [Buget] )
+    MEASURE '_Masuri'[Utilizare buget %] = DIVIDE ( [Angajat], [Buget] )
+    MEASURE '_Masuri'[Executie buget %] = DIVIDE ( [Realizat], [Buget] )
+    MEASURE '_Masuri'[Maverick] = SUM ( Realizat_Lunar[Maverick_RON] )
+    MEASURE '_Masuri'[Maverick % din realizat] = DIVIDE ( [Maverick], SUM ( Realizat_Lunar[Suma_RON] ) )
+    MEASURE '_Masuri'[Alerta] =
+        VAR _v = ABS ( [Varianta %] )
+        RETURN
+            IF (
+                ISBLANK ( [Realizat] ) || [Realizat] = 0, BLANK (),
+                SWITCH ( TRUE (), _v <= 0.05, "Verde", _v <= 0.10, "Galben", "Roșu" )
+            )
+    MEASURE '_Masuri'[Alerta culoare] =
+        SWITCH ( [Alerta], "Verde", "#15803d", "Galben", "#b45309", "Roșu", "#b42318", "#6b7280" )
+    MEASURE '_Masuri'[Analize de revizuit] =
+        CALCULATE ( COUNTROWS ( Analize ), Analize[Necesita_Revizuire] = TRUE () )
+
+    // ---------- Approval pipeline
+    MEASURE '_Masuri'[Nr cereri] = COUNTROWS ( Cereri )
+    MEASURE '_Masuri'[Cereri in aprobare] = CALCULATE ( [Nr cereri], Cereri[Status] = "În aprobare" )
+    MEASURE '_Masuri'[Cereri aprobate] = CALCULATE ( [Nr cereri], Cereri[Status] IN { "Aprobată", "Exportată" } )
+    MEASURE '_Masuri'[Cereri respinse] = CALCULATE ( [Nr cereri], Cereri[Status] = "Respinsă" )
+    MEASURE '_Masuri'[Rata respingere] = DIVIDE ( [Cereri respinse], [Cereri aprobate] + [Cereri respinse] )
+    MEASURE '_Masuri'[Respinse la validare] =
+        CALCULATE ( [Cereri respinse], ISBLANK ( Cereri[Aprobari] ) || Cereri[Aprobari] = "" )
+    MEASURE '_Masuri'[Valoare aprobata] =
+        CALCULATE ( SUM ( Cereri[Valoare_RON] ), Cereri[Status] IN { "Aprobată", "Exportată" } )
+    MEASURE '_Masuri'[Timp mediu aprobare (ore)] =
+        AVERAGEX (
+            FILTER (
+                Cereri,
+                NOT ISBLANK ( Cereri[Data_Finalizare] )
+                    && NOT ISBLANK ( Cereri[Aprobari] )
+                    && Cereri[Aprobari] <> ""
+            ),
+            DATEDIFF ( Cereri[Data_Cerere], Cereri[Data_Finalizare], MINUTE ) / 60
+        )
+    MEASURE '_Masuri'[Cereri peste buget %] =
+        DIVIDE ( CALCULATE ( [Nr cereri], Cereri[Peste_Buget] = TRUE () ), [Nr cereri] )
+
+// Quick check (luna 2026-10): Buget 500.000, Realizat ~518.200, Varianta % ~+3,6%, Maverick 12.348
+EVALUATE
+    SUMMARIZECOLUMNS (
+        CC[CC],
+        TREATAS ( { "2026-10" }, Luni[Luna] ),
+        "Buget", [Buget],
+        "Realizat", [Realizat],
+        "Varianta %", [Varianta %],
+        "Maverick", [Maverick],
+        "Alerta", [Alerta]
+    )

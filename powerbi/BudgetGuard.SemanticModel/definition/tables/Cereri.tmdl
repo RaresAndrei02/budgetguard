@@ -1,0 +1,146 @@
+table Cereri
+	lineageTag: 7b86b7ab-cf95-4c5b-a8bf-9751e14267c2
+
+	column Title
+		dataType: string
+		lineageTag: 9e657734-9391-4dc8-a414-5cd2b803f9e1
+		summarizeBy: none
+		sourceColumn: Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column TitluCerere
+		dataType: string
+		lineageTag: 4106f67d-1fac-4feb-bcdd-37e9f41ff943
+		summarizeBy: none
+		sourceColumn: TitluCerere
+
+		annotation SummarizationSetBy = Automatic
+
+	column CentruCost
+		dataType: string
+		lineageTag: d9523e87-cd9b-4369-b5b5-a0f4615af93d
+		summarizeBy: none
+		sourceColumn: CentruCost
+
+		annotation SummarizationSetBy = Automatic
+
+	column Categorie
+		dataType: string
+		lineageTag: 7d229a02-4033-41f3-ad3a-10011add7104
+		summarizeBy: none
+		sourceColumn: Categorie
+
+		annotation SummarizationSetBy = Automatic
+
+	column Luna_Buget
+		dataType: string
+		lineageTag: 836c4250-b756-4de4-adcd-f907401328f9
+		summarizeBy: none
+		sourceColumn: Luna_Buget
+
+		annotation SummarizationSetBy = Automatic
+
+	column Valoare_RON
+		dataType: double
+		lineageTag: e5bd441e-6f54-487d-a969-9403c4fdcb2c
+		summarizeBy: sum
+		sourceColumn: Valoare_RON
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Tip
+		dataType: string
+		lineageTag: c45e18d8-abc0-4c35-bd93-142e141d2f1d
+		summarizeBy: none
+		sourceColumn: Tip
+
+		annotation SummarizationSetBy = Automatic
+
+	column Peste_Buget
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 53de328b-aa41-4e8d-aed5-c004be2c9006
+		summarizeBy: none
+		sourceColumn: Peste_Buget
+
+		annotation SummarizationSetBy = Automatic
+
+	column Status
+		dataType: string
+		lineageTag: dfad6b2c-d062-4941-a2df-b3de3f7b7fcd
+		summarizeBy: none
+		sourceColumn: Status
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data_Cerere
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 6055fc33-6f85-4c46-8bfd-fca1cedb64aa
+		summarizeBy: none
+		sourceColumn: Data_Cerere
+
+		variation Variation
+			isDefault
+			relationship: 8a1f8a42-f31e-4523-8d5d-8441d8056f06
+			defaultHierarchy: LocalDateTable_a9463946-b8c0-4aa4-9b1f-529f1ef71d3d.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data_Finalizare
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 38837df8-607e-4037-84e8-9135a6d13da5
+		summarizeBy: none
+		sourceColumn: Data_Finalizare
+
+		variation Variation
+			isDefault
+			relationship: 0f8605dd-16da-4c80-8513-78a10be0f3ad
+			defaultHierarchy: LocalDateTable_41a612e5-c8ee-4e54-9b84-6bcb8046a025.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column Aprobari
+		dataType: string
+		lineageTag: f46b93bd-6f50-4328-9db6-43088ac31f29
+		summarizeBy: none
+		sourceColumn: Aprobari
+
+		annotation SummarizationSetBy = Automatic
+
+	column Furnizor_ANAF
+		dataType: string
+		lineageTag: 12eb6387-e5f7-4e56-8e0e-08a0bfb2290e
+		summarizeBy: none
+		sourceColumn: Furnizor_ANAF
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Data cerere (zi)' = DATEVALUE ( Cereri[Data_Cerere] )
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 706a92d5-0d76-459f-9a1f-a3086ef1dbaf
+		summarizeBy: none
+		isDataTypeInferred
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Cereri = m
+		mode: import
+		source =
+				let
+				    Source = SharePoint.Tables("https://asero0.sharepoint.com/sites/ucBudgetGuard", [ApiVersion = 15]),
+				    #"e9f4ad2f-dacc-46ca-a60e-7333277cfdf4" = Source{[Id="e9f4ad2f-dacc-46ca-a60e-7333277cfdf4"]}[Items],
+				    #"Renamed Columns" = Table.RenameColumns(#"e9f4ad2f-dacc-46ca-a60e-7333277cfdf4",{{"ID", "ID.1"}}),
+				    Custom1 = Table.TransformColumnTypes(Table.SelectColumns(#"Renamed Columns", {"Title","TitluCerere","CentruCost","Categorie","Luna_Buget","Valoare_RON","Tip","Peste_Buget","Status","Data_Cerere","Data_Finalizare","Aprobari","Furnizor_ANAF"}, MissingField.UseNull), {{"Valoare_RON", type number}, {"Peste_Buget", type logical}, {"Data_Cerere", type datetime}, {"Data_Finalizare", type datetime}})
+				in
+				    Custom1
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

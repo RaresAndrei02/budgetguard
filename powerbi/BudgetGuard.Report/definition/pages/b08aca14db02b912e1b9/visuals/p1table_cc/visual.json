@@ -1,0 +1,179 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.3.0/schema.json",
+  "name": "p1table_cc",
+  "position": {
+    "x": 640,
+    "y": 160,
+    "z": 6000,
+    "height": 270,
+    "width": 630,
+    "tabOrder": 6000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "CC"
+                    }
+                  },
+                  "Property": "CC"
+                }
+              },
+              "queryRef": "CC.CC",
+              "nativeQueryRef": "CC",
+              "displayName": "Centru de cost"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Masuri"
+                    }
+                  },
+                  "Property": "Buget"
+                }
+              },
+              "queryRef": "_Masuri.Buget",
+              "nativeQueryRef": "Buget"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Masuri"
+                    }
+                  },
+                  "Property": "Realizat"
+                }
+              },
+              "queryRef": "_Masuri.Realizat",
+              "nativeQueryRef": "Realizat"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Masuri"
+                    }
+                  },
+                  "Property": "Varianta %"
+                }
+              },
+              "queryRef": "_Masuri.Varianta %",
+              "nativeQueryRef": "Varianta %",
+              "displayName": "Varianță"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Masuri"
+                    }
+                  },
+                  "Property": "Maverick"
+                }
+              },
+              "queryRef": "_Masuri.Maverick",
+              "nativeQueryRef": "Maverick",
+              "displayName": "Fără cerere"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Masuri"
+                    }
+                  },
+                  "Property": "Alerta"
+                }
+              },
+              "queryRef": "_Masuri.Alerta",
+              "nativeQueryRef": "Alerta",
+              "displayName": "Alertă"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "values": [
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Masuri"
+                        }
+                      },
+                      "Property": "Alerta culoare"
+                    }
+                  }
+                }
+              }
+            },
+            "fontColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Literal": {
+                      "Value": "'#FFFFFF'"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "_Masuri.Alerta"
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Alertă pe centru de cost'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

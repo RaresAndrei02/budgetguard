@@ -1,0 +1,199 @@
+table _Masuri
+	lineageTag: a00a6c37-fb18-4bcc-90f0-2a79f124b453
+
+	measure 'Maverick culoare' = IF ( [Maverick] > 0, "#fee4e2" )
+		lineageTag: 3d15b2f9-97a9-48a3-bece-67d1e919704c
+
+	measure Buget = ```
+			SUM ( Bugete[Buget_RON] )
+			    
+			```
+		formatString: #,0
+		lineageTag: 3024b100-a036-47bc-8b59-9e436246fa14
+
+	measure Angajat = ```
+			SUM ( Bugete[Angajat_RON] )
+			    
+			```
+		formatString: #,0
+		lineageTag: a5454f4f-e2f3-4758-a3cc-c3e581cd7693
+
+	measure Realizat = ```
+			SUM ( Bugete[Realizat_RON] )
+			    
+			```
+		formatString: #,0
+		lineageTag: fc4fec3e-93b6-4adf-b939-aca38fd22e69
+
+	measure Ramas = ```
+			[Buget] - [Angajat]
+			    
+			```
+		formatString: #,0
+		lineageTag: e36bd856-dfd6-4931-9cad-704d2a0f1d63
+
+	measure Varianta = ```
+			[Realizat] - [Buget]
+			    
+			```
+		formatString: #,0
+		lineageTag: 903424a0-1a8d-4faf-8e9d-af26aebf250b
+
+	measure 'Varianta %' = ```
+			DIVIDE ( [Varianta], [Buget] )
+			    
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 9c6dc899-7340-449d-9c3c-0e19f5576e27
+
+	measure 'Utilizare buget %' = ```
+			DIVIDE ( [Angajat], [Buget] )
+			    
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: be2ee1d8-69ac-4248-b0e4-7cfdf1f53acf
+
+	measure Maverick = ```
+			SUM ( Realizat_Lunar[Maverick_RON] )
+			    
+			```
+		formatString: #,0
+		lineageTag: c744415c-4eba-4723-9d4f-ed196b1387fa
+
+	measure 'Executie buget %' = ```
+			DIVIDE ( [Realizat], [Buget] )
+			    
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 7840673a-850c-4e2c-87a0-baa42e0c3a98
+
+	measure 'Maverick % din realizat' = ```
+			DIVIDE ( [Maverick], SUM ( Realizat_Lunar[Suma_RON] ) )
+			    
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 35b4315a-56d4-437b-a416-d917c349e270
+
+	measure Alerta = ```
+			
+			        VAR _v = ABS ( [Varianta %] )
+			        RETURN
+			            IF (
+			                ISBLANK ( [Realizat] ) || [Realizat] = 0, BLANK (),
+			                SWITCH ( TRUE (), _v <= 0.05, "Verde", _v <= 0.10, "Galben", "Roșu" )
+			            )
+			    
+			```
+		lineageTag: dc926927-4e13-4936-b605-e3aadd8a6332
+
+	measure 'Alerta culoare' = ```
+			
+			        SWITCH ( [Alerta], "Verde", "#15803d", "Galben", "#b45309", "Roșu", "#b42318", "#6b7280" )
+			    
+			```
+		lineageTag: d8735a78-6428-4f46-8519-482fedd766cd
+
+	measure 'Analize de revizuit' = ```
+			
+			        CALCULATE ( COUNTROWS ( Analize ), Analize[Necesita_Revizuire] = TRUE () )
+			
+			    
+			```
+		formatString: 0
+		lineageTag: 52b57e8d-f827-4c7f-ba17-e76526cf90d6
+
+	measure 'Nr cereri' = ```
+			COUNTROWS ( Cereri )
+			    
+			```
+		formatString: 0
+		lineageTag: f212dd41-6782-4800-b7cc-0fca9c966c92
+
+	measure 'Cereri in aprobare' = ```
+			CALCULATE ( [Nr cereri], Cereri[Status] = "În aprobare" )
+			    
+			```
+		formatString: 0
+		lineageTag: fab86d66-dcdd-4a7d-b9ef-1c10cd38e1b8
+
+	measure 'Cereri aprobate' = ```
+			CALCULATE ( [Nr cereri], Cereri[Status] IN { "Aprobată", "Exportată" } )
+			    
+			```
+		formatString: 0
+		lineageTag: 77e74fca-2feb-403e-b318-f0bf4d2116dd
+
+	measure 'Cereri respinse' = ```
+			CALCULATE ( [Nr cereri], Cereri[Status] = "Respinsă" )
+			    
+			```
+		formatString: 0
+		lineageTag: 6a4e430c-3eb4-432b-a5b2-ae6303ef0ef6
+
+	measure 'Rata respingere' = ```
+			DIVIDE ( [Cereri respinse], [Cereri aprobate] + [Cereri respinse] )
+			    
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 9dae8cea-f21e-4bba-b4d9-30907403c7c0
+
+	measure 'Respinse la validare' = ```
+			
+			        CALCULATE ( [Cereri respinse], ISBLANK ( Cereri[Aprobari] ) || Cereri[Aprobari] = "" )
+			    
+			```
+		formatString: 0
+		lineageTag: 8c2f5caa-4c74-410b-8d0a-6d7e6094c0e4
+
+	measure 'Valoare aprobata' = ```
+			
+			        CALCULATE ( SUM ( Cereri[Valoare_RON] ), Cereri[Status] IN { "Aprobată", "Exportată" } )
+			    
+			```
+		formatString: #,0
+		lineageTag: f9836513-f7ca-4a89-9946-75de4693c9c4
+
+	measure 'Timp mediu aprobare (ore)' = ```
+			
+			        AVERAGEX (
+			            FILTER (
+			                Cereri,
+			                NOT ISBLANK ( Cereri[Data_Finalizare] )
+			                    && NOT ISBLANK ( Cereri[Aprobari] )
+			                    && Cereri[Aprobari] <> ""
+			            ),
+			            DATEDIFF ( Cereri[Data_Cerere], Cereri[Data_Finalizare], MINUTE ) / 60
+			        )
+			    
+			```
+		formatString: 0.0
+		lineageTag: f65a7b33-024f-4d2b-a6fc-4a7acca4e652
+
+	measure 'Cereri peste buget %' = ```
+			
+			        DIVIDE ( CALCULATE ( [Nr cereri], Cereri[Peste_Buget] = TRUE () ), [Nr cereri] )
+			
+			
+			```
+		formatString: 0.0%;-0.0%;0.0%
+		lineageTag: 83f50883-221f-4ebf-80da-13695c56955c
+
+	column Column1
+		dataType: string
+		lineageTag: 611b5887-e6aa-48b5-a182-bf06b0fba70d
+		summarizeBy: none
+		sourceColumn: Column1
+
+		annotation SummarizationSetBy = Automatic
+
+	partition _Masuri = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Column1", type text}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+

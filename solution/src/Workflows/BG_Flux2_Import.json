@@ -1,0 +1,1991 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "bg_sharedsharepointonline_14880"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_gmail": {
+        "api": {
+          "name": "shared_gmail"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "bg_sharedgmail_86357"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_teams": {
+        "api": {
+          "name": "shared_teams"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "bg_sharedteams_a3c79"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "GroqApiKey (bg_GroqApiKey)": {
+          "defaultValue": "",
+          "type": "String",
+          "metadata": {
+            "schemaName": "bg_GroqApiKey"
+          }
+        }
+      },
+      "triggers": {
+        "When_a_file_is_created_(properties_only)": {
+          "type": "OpenApiConnection",
+          "description": "Start_FisierNou",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+              "table": "0268e18a-7735-4955-8453-d05ada422a58"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetOnNewFileItems",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "recurrence": {
+            "interval": 5,
+            "frequency": "Minute"
+          },
+          "conditions": [
+            {
+              "expression": "@endsWith(toLower(triggerOutputs()?['body/{FilenameWithExtension}']), '.json')"
+            },
+            {
+              "expression": "@not(contains(toLower(triggerOutputs()?['body/{Path}']), 'procesate'))"
+            }
+          ],
+          "splitOn": "@triggerOutputs()?['body/value']",
+          "metadata": {
+            "operationMetadataId": "0e568035-95d1-41cf-b212-f74240cf2f38"
+          }
+        }
+      },
+      "actions": {
+        "Get_Config": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+              "table": "f299f234-df48-4098-a8da-11ad896a9ed5"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "287ce98b-3342-4d1d-8db4-85c3d88c036b"
+          }
+        },
+        "Select_Config": {
+          "type": "Select",
+          "inputs": {
+            "from": "@outputs('Get_Config')?['body/value']",
+            "select": "@concat('\"', item()?['Title'], '\":\"', item()?['Valoare'], '\"')"
+          },
+          "runAfter": {
+            "Get_Config": [
+              "Succeeded"
+            ]
+          }
+        },
+        "cfg": {
+          "type": "Compose",
+          "inputs": "@json(concat('{', join(body('Select_Config'), ','), '}'))",
+          "runAfter": {
+            "Select_Config": [
+              "Succeeded"
+            ]
+          }
+        },
+        "System_Prompt": {
+          "type": "Compose",
+          "inputs": "Ești analist FP&A la Vestra Retail SRL. Primești, pentru un singur centru de cost și o singură lună, un obiect JSON cu: bugetul, suma angajată prin cereri de achiziție aprobate, cheltuielile realizate, varianța (realizat − buget, în RON și în procente, deja calculată), suma maverick (cheltuieli realizate fără cerere aprobată) și detaliul pe categorii (buget / angajat / realizat / maverick).\n\nReguli de conținut:\n- Scrii în limba română, cu diacritice cu virgulă dedesubt (ș, ț), concis și factual. Folosești sumele din date, rotunjite la RON întregi, cu punct ca separator de mii (ex. 15.250 RON), și procentele cu virgulă (ex. 11,91%).\n- Nu recalculezi varianța: folosești valorile varianta_ron și varianta_pct primite. Varianța pozitivă înseamnă depășire de buget (abatere nefavorabilă); varianța negativă înseamnă economie (abatere favorabilă). Nu folosi expresiile „abatere pozitivă” sau „abatere negativă”.\n- Pentru cauze, compari realizat cu buget în fiecare categorie și alegi categoriile care explică direcția varianței totale, în ordinea mărimii diferenței: la depășire, categoriile cu realizat peste buget; la economie, categoriile cu realizat sub buget. Dai pentru fiecare diferența în RON (ex. „MKT: +14.400 RON peste buget”).\n- Nu inventezi cauze care nu reies din date (campanii, prețuri, angajări etc.). Când o explicație e doar probabilă, spui explicit „probabil”.\n- Dacă maverick_ron > 0, menționezi obligatoriu suma și categoria afectată: sunt cheltuieli efectuate fără cerere aprobată.\n\nRegula de alertă (o aplici exact, în ordinea asta):\n1. Pornești de la |varianta_pct|: ≤ praguri.verde_max_pct → „Verde”; ≤ praguri.galben_max_pct → „Galben”; altfel „Roșu”.\n2. Dacă maverick_ron > 0 și rezultatul de la pasul 1 este „Verde”, alerta devine „Galben”. Altfel rămâne cea de la pasul 1.\n\nRăspunzi EXCLUSIV cu un obiect JSON valid, fără text înainte sau după, cu exact aceste 4 chei:\n- \"comentariu\": șir, 2–3 fraze despre situația centrului de cost;\n- \"cauze\": listă cu 1–3 șiruri scurte (cauzele observate sau probabile);\n- \"nivel_alerta\": exact unul dintre \"Verde\", \"Galben\", \"Roșu\";\n- \"actiune\": șir, o singură recomandare concretă pentru responsabilul centrului de cost.",
+          "runAfter": {
+            "cfg": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varRulare": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varRulare",
+                "type": "string",
+                "value": "@workflow()?['run']?['name']"
+              }
+            ]
+          },
+          "runAfter": {
+            "System_Prompt": [
+              "Succeeded"
+            ]
+          }
+        },
+        "_varFisier": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varFisier",
+                "type": "string",
+                "value": "@triggerOutputs()?['body/{FilenameWithExtension}']"
+              }
+            ]
+          },
+          "runAfter": {
+            "varRulare": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varChei": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varChei",
+                "type": "array",
+                "value": []
+              }
+            ]
+          },
+          "runAfter": {
+            "_varFisier": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varValide": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varValide",
+                "type": "array",
+                "value": []
+              }
+            ]
+          },
+          "runAfter": {
+            "varChei": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varErori": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varErori",
+                "type": "array",
+                "value": []
+              }
+            ]
+          },
+          "runAfter": {
+            "varValide": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varMav": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varMav",
+                "type": "object",
+                "value": {}
+              }
+            ]
+          },
+          "runAfter": {
+            "varErori": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varRezCC": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varRezCC",
+                "type": "array",
+                "value": []
+              }
+            ]
+          },
+          "runAfter": {
+            "varMav": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varAI_OK": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varAI_OK",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          },
+          "runAfter": {
+            "varRezCC": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varAI_Esec": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varAI_Esec",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          },
+          "runAfter": {
+            "varAI_OK": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varCursuri": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varCursuri",
+                "type": "object",
+                "value": "@json(concat('{\"RON\":1,\"EUR\":', outputs('cfg')?['curs_fallback_EUR'], ',\"USD\":', outputs('cfg')?['curs_fallback_USD'], '}'))"
+              }
+            ]
+          },
+          "runAfter": {
+            "varAI_Esec": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varDataCurs": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varDataCurs",
+                "type": "string",
+                "value": " rezervă Config"
+              }
+            ]
+          },
+          "runAfter": {
+            "varCursuri": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Scope_Try": {
+          "type": "Scope",
+          "actions": {
+            "Get_file_content": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                  "id": "@triggerOutputs()?['body/{Identifier}']",
+                  "inferContentType": true
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetFileContent",
+                  "connectionName": "shared_sharepointonline"
+                }
+              }
+            },
+            "Fisier_Text": {
+              "type": "Compose",
+              "inputs": "@replace(if(empty(body('Get_file_content')?['$content']), string(body('Get_file_content')), base64ToString(coalesce(body('Get_file_content')?['$content'], ''))), decodeUriComponent('%EF%BB%BF'), '')",
+              "runAfter": {
+                "Get_file_content": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Fisier_JSON": {
+              "type": "Compose",
+              "inputs": "@json(outputs('Fisier_Text'))",
+              "runAfter": {
+                "Fisier_Text": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Parse_Fisier": {
+              "type": "ParseJson",
+              "inputs": {
+                "content": "@outputs('Fisier_JSON')",
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sursa": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "luna": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "generat_la": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "inregistrari": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "rand": {
+                            "type": [
+                              "integer",
+                              "number",
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "luna": {
+                            "type": [
+                              "string",
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "centru_cost": {
+                            "type": [
+                              "string",
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "categorie": {
+                            "type": [
+                              "string",
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "suma": {
+                            "type": [
+                              "number",
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "moneda": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "nr_documente": {
+                            "type": [
+                              "integer",
+                              "number",
+                              "string",
+                              "null"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "inregistrari"
+                  ]
+                }
+              },
+              "runAfter": {
+                "Fisier_JSON": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Luna_Import": {
+              "type": "Compose",
+              "inputs": "@coalesce(body('Parse_Fisier')?['luna'], '')",
+              "runAfter": {
+                "Parse_Fisier": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Get_Nomenclator": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                  "table": "9cea1c8e-a07b-41b8-ad45-fd2ba36974d5"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetItems",
+                  "connectionName": "shared_sharepointonline"
+                }
+              },
+              "runAfter": {
+                "Luna_Import": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Filter_CC": {
+              "type": "Query",
+              "inputs": {
+                "from": "@outputs('Get_Nomenclator')?['body/value']",
+                "where": "@equals(item()?['Tip']?['Value'], 'CC')"
+              },
+              "runAfter": {
+                "Get_Nomenclator": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Select_Coduri_CC": {
+              "type": "Select",
+              "inputs": {
+                "from": "@body('Filter_CC')",
+                "select": "@item()?['Title']"
+              },
+              "runAfter": {
+                "Filter_CC": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Filter_CAT": {
+              "type": "Query",
+              "inputs": {
+                "from": "@outputs('Get_Nomenclator')?['body/value']",
+                "where": "@equals(item()?['Tip']?['Value'], 'CAT')"
+              },
+              "runAfter": {
+                "Select_Coduri_CC": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Select_Coduri_CAT": {
+              "type": "Select",
+              "inputs": {
+                "from": "@body('Filter_CAT')",
+                "select": "@item()?['Title']"
+              },
+              "runAfter": {
+                "Filter_CAT": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "HTTP_BNR": {
+              "type": "Http",
+              "inputs": {
+                "uri": "https://curs.bnr.ro/nbrfxrates.xml",
+                "method": "GET",
+                "retryPolicy": {
+                  "type": "exponential",
+                  "count": 3,
+                  "interval": "PT10S"
+                }
+              },
+              "runAfter": {
+                "Select_Coduri_CAT": [
+                  "Succeeded"
+                ]
+              },
+              "limit": {
+                "timeout": "PT1M"
+              },
+              "runtimeConfiguration": {
+                "contentTransfer": {
+                  "transferMode": "Chunked"
+                }
+              }
+            },
+            "Cond_BNR_OK": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@equals(actions('HTTP_BNR')?['status'], 'Succeeded')",
+                      "@true"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Set_varCursuri": {
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "varCursuri",
+                    "value": "@json(concat('{\"RON\":1,\"EUR\":', xpath(xml(body('HTTP_BNR')), 'string(//*[local-name()=''Rate''][@currency=''EUR''])'), ',\"USD\":', xpath(xml(body('HTTP_BNR')), 'string(//*[local-name()=''Rate''][@currency=''USD''])'), '}'))"
+                  }
+                },
+                "Set_varDataCurs": {
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "varDataCurs",
+                    "value": "@xpath(xml(body('HTTP_BNR')), 'string(//*[local-name()=''Cube'']/@date)')"
+                  },
+                  "runAfter": {
+                    "Set_varCursuri": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "HTTP_BNR": [
+                  "Succeeded",
+                  "Failed"
+                ]
+              }
+            },
+            "Valideaza_Randuri": {
+              "type": "Foreach",
+              "foreach": "@body('Parse_Fisier')?['inregistrari']",
+              "actions": {
+                "Rand": {
+                  "type": "Compose",
+                  "inputs": {
+                    "rand": "@{items('Valideaza_Randuri')?['rand']}",
+                    "luna": "@{trim(string(coalesce(items('Valideaza_Randuri')?['luna'], '')))}",
+                    "cc": "@{trim(string(coalesce(items('Valideaza_Randuri')?['centru_cost'], '')))}",
+                    "cat": "@{trim(string(coalesce(items('Valideaza_Randuri')?['categorie'], '')))}",
+                    "suma": "@{trim(string(coalesce(items('Valideaza_Randuri')?['suma'], '')))}",
+                    "moneda": "@{trim(string(coalesce(items('Valideaza_Randuri')?['moneda'], '')))}",
+                    "nr_documente": "@{items('Valideaza_Randuri')?['nr_documente']}"
+                  }
+                },
+                "Luna_OK": {
+                  "type": "Compose",
+                  "inputs": "@and(equals(length(outputs('Rand')?['luna']), 7), equals(substring(concat(outputs('Rand')?['luna'], '_______'), 4, 1), '-'), isInt(substring(concat(outputs('Rand')?['luna'], '_______'), 0, 4)), contains(createArray('01','02','03','04','05','06','07','08','09','10','11','12'), substring(concat(outputs('Rand')?['luna'], '_______'), 5, 2)))",
+                  "runAfter": {
+                    "Rand": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Lipsa": {
+                  "type": "Compose",
+                  "inputs": "@join(split(trim(concat(if(empty(outputs('Rand')?['luna']), 'luna ', ''), if(empty(outputs('Rand')?['cc']), 'centru_cost ', ''), if(empty(outputs('Rand')?['cat']), 'categorie ', ''), if(empty(outputs('Rand')?['suma']), 'suma ', ''), if(empty(outputs('Rand')?['moneda']), 'moneda', ''))), ' '), ', ')",
+                  "runAfter": {
+                    "Luna_OK": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Cheie": {
+                  "type": "Compose",
+                  "inputs": "@if(and(outputs('Luna_OK'), not(empty(outputs('Rand')?['cc'])), not(empty(outputs('Rand')?['cat']))), concat(outputs('Rand')?['luna'], '_', outputs('Rand')?['cc'], '_', outputs('Rand')?['cat']), '')",
+                  "runAfter": {
+                    "Lipsa": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Suma_Num": {
+                  "type": "Compose",
+                  "inputs": "@float(if(isFloat(outputs('Rand')?['suma']), outputs('Rand')?['suma'], '0'))",
+                  "runAfter": {
+                    "Cheie": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Cod_Eroare": {
+                  "type": "Compose",
+                  "inputs": "@if(not(empty(outputs('Lipsa'))), 'LIPSA', if(not(outputs('Luna_OK')), 'LUNA', if(not(isFloat(outputs('Rand')?['suma'])), 'TIP', if(lessOrEquals(outputs('Suma_Num'), 0), 'SUMA', if(not(contains(createArray('RON','EUR','USD'), outputs('Rand')?['moneda'])), 'MONEDA', if(not(contains(body('Select_Coduri_CC'), outputs('Rand')?['cc'])), 'CC', if(not(contains(body('Select_Coduri_CAT'), outputs('Rand')?['cat'])), 'CAT', if(contains(variables('varChei'), outputs('Cheie')), 'DUP', ''))))))))",
+                  "runAfter": {
+                    "Suma_Num": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Cond_Rand_Valid": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@empty(outputs('Cod_Eroare'))",
+                          "@true"
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "Suma_RON": {
+                      "type": "Compose",
+                      "inputs": "@float(formatNumber(mul(outputs('Suma_Num'), float(variables('varCursuri')?[outputs('Rand')?['moneda']])), '0.00', 'en-US'))"
+                    },
+                    "Append_varChei": {
+                      "type": "AppendToArrayVariable",
+                      "inputs": {
+                        "name": "varChei",
+                        "value": "@outputs('Cheie')"
+                      },
+                      "runAfter": {
+                        "Suma_RON": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Inreg_Valida": {
+                      "type": "Compose",
+                      "inputs": {
+                        "rand": "@{outputs('Rand')?['rand']}",
+                        "cheie": "@{outputs('Cheie')}",
+                        "luna": "@{outputs('Rand')?['luna']}",
+                        "cc": "@{outputs('Rand')?['cc']}",
+                        "cat": "@{outputs('Rand')?['cat']}",
+                        "suma": "@{outputs('Suma_Num')}",
+                        "moneda": "@{outputs('Rand')?['moneda']}",
+                        "suma_ron": "@{outputs('Suma_RON')}",
+                        "nr_documente": "@{outputs('Rand')?['nr_documente']}"
+                      },
+                      "runAfter": {
+                        "Append_varChei": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Append_varValide": {
+                      "type": "AppendToArrayVariable",
+                      "inputs": {
+                        "name": "varValide",
+                        "value": "@outputs('Inreg_Valida')"
+                      },
+                      "runAfter": {
+                        "Inreg_Valida": [
+                          "Succeeded"
+                        ]
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Prima_Aparitie": {
+                        "type": "Query",
+                        "inputs": {
+                          "from": "@variables('varValide')",
+                          "where": "@equals(item()?['cheie'], outputs('Cheie'))"
+                        }
+                      },
+                      "Ref": {
+                        "type": "Compose",
+                        "inputs": "@if(empty(outputs('Cheie')), concat('Rândul ', outputs('Rand')?['rand']), concat('Rândul ', outputs('Rand')?['rand'], ' (', outputs('Cheie'), ')'))",
+                        "runAfter": {
+                          "Prima_Aparitie": [
+                            "Succeeded"
+                          ]
+                        }
+                      },
+                      "Mesaj_Rand": {
+                        "type": "Compose",
+                        "inputs": "@if(equals(outputs('Cod_Eroare'), 'LIPSA'), concat(outputs('Ref'), ': lipsesc câmpurile obligatorii ', outputs('Lipsa'), '.'), if(equals(outputs('Cod_Eroare'), 'LUNA'), concat(outputs('Ref'), ': luna „', outputs('Rand')?['luna'], '” are format greșit; formatul corect este AAAA-LL (ex. 2026-10).'), if(equals(outputs('Cod_Eroare'), 'TIP'), concat(outputs('Ref'), ': suma „', outputs('Rand')?['suma'], '” nu este un număr.'), if(equals(outputs('Cod_Eroare'), 'SUMA'), concat(outputs('Ref'), ': suma ', outputs('Rand')?['suma'], ' nu este validă; se acceptă doar valori mai mari decât 0.'), if(equals(outputs('Cod_Eroare'), 'MONEDA'), concat(outputs('Ref'), ': moneda „', outputs('Rand')?['moneda'], '” nu este acceptată; valori permise: RON, EUR, USD.'), if(equals(outputs('Cod_Eroare'), 'CC'), concat(outputs('Ref'), ': centrul de cost „', outputs('Rand')?['cc'], '” nu există în nomenclator. Coduri valide: ', join(body('Select_Coduri_CC'), ', '), '.'), if(equals(outputs('Cod_Eroare'), 'CAT'), concat(outputs('Ref'), ': categoria „', outputs('Rand')?['cat'], '” nu există în nomenclator. Coduri valide: ', join(body('Select_Coduri_CAT'), ', '), '.'), concat(outputs('Ref'), ': înregistrare duplicat — cheia a apărut deja la rândul ', coalesce(first(body('Prima_Aparitie'))?['rand'], '?'), '; rândul a fost ignorat.'))))))))",
+                        "runAfter": {
+                          "Ref": [
+                            "Succeeded"
+                          ]
+                        }
+                      },
+                      "Err_Rand": {
+                        "type": "Compose",
+                        "inputs": {
+                          "rand": "@{outputs('Rand')?['rand']}",
+                          "cheie": "@{outputs('Cheie')}",
+                          "tip": "@{if(equals(outputs('Cod_Eroare'), 'LIPSA'), 'Câmp lipsă', if(equals(outputs('Cod_Eroare'), 'LUNA'), 'Format lună', if(equals(outputs('Cod_Eroare'), 'TIP'), 'Tip invalid', if(or(equals(outputs('Cod_Eroare'), 'SUMA'), equals(outputs('Cod_Eroare'), 'MONEDA')), 'Valoare în afara domeniului', if(equals(outputs('Cod_Eroare'), 'DUP'), 'Duplicat', 'Cod necunoscut')))))}",
+                          "mesaj": "@{outputs('Mesaj_Rand')}"
+                        },
+                        "runAfter": {
+                          "Mesaj_Rand": [
+                            "Succeeded"
+                          ]
+                        }
+                      },
+                      "Append_varErori": {
+                        "type": "AppendToArrayVariable",
+                        "inputs": {
+                          "name": "varErori",
+                          "value": "@outputs('Err_Rand')"
+                        },
+                        "runAfter": {
+                          "Err_Rand": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Cod_Eroare": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "Cond_BNR_OK": [
+                  "Succeeded"
+                ]
+              },
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 1
+                }
+              }
+            },
+            "Upsert_Realizat": {
+              "type": "Foreach",
+              "foreach": "@variables('varValide')",
+              "actions": {
+                "Get_Realizat": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                      "table": "9eda943f-6a84-406f-ad20-4a0d9e234bfc",
+                      "$filter": "Title eq '@{items('Upsert_Realizat')?['cheie']}'",
+                      "$top": 1
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "GetItems",
+                      "connectionName": "shared_sharepointonline"
+                    }
+                  }
+                },
+                "Get_Cereri_Aprobate": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                      "table": "e9f4ad2f-dacc-46ca-a60e-7333277cfdf4",
+                      "$filter": "Luna_Buget eq '@{items('Upsert_Realizat')?['luna']}' and CentruCost eq '@{items('Upsert_Realizat')?['cc']}' and Categorie eq '@{items('Upsert_Realizat')?['cat']}' and (Status eq 'Aprobată' or Status eq 'Exportată')"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "GetItems",
+                      "connectionName": "shared_sharepointonline"
+                    }
+                  },
+                  "runAfter": {
+                    "Get_Realizat": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Select_Valori": {
+                  "type": "Select",
+                  "inputs": {
+                    "from": "@outputs('Get_Cereri_Aprobate')?['body/value']",
+                    "select": "@coalesce(item()?['Valoare_RON'], 0)"
+                  },
+                  "runAfter": {
+                    "Get_Cereri_Aprobate": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Aprobat_RON": {
+                  "type": "Compose",
+                  "inputs": "@float(formatNumber(float(xpath(xml(json(concat('{\"r\":{\"v\":', string(body('Select_Valori')), '}}'))), 'sum(/r/v)')), '0.00', 'en-US'))",
+                  "runAfter": {
+                    "Select_Valori": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Maverick_RON": {
+                  "type": "Compose",
+                  "inputs": "@max(0, float(formatNumber(sub(float(items('Upsert_Realizat')?['suma_ron']), outputs('Aprobat_RON')), '0.00', 'en-US')))",
+                  "runAfter": {
+                    "Aprobat_RON": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Mav_Map": {
+                  "type": "Compose",
+                  "inputs": "@setProperty(variables('varMav'), items('Upsert_Realizat')?['cheie'], outputs('Maverick_RON'))",
+                  "runAfter": {
+                    "Maverick_RON": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Set_varMav": {
+                  "type": "SetVariable",
+                  "inputs": {
+                    "name": "varMav",
+                    "value": "@outputs('Mav_Map')"
+                  },
+                  "runAfter": {
+                    "Mav_Map": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Cond_Exista_Realizat": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@empty(outputs('Get_Realizat')?['body/value'])",
+                          "@true"
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "Create_Realizat": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                          "table": "9eda943f-6a84-406f-ad20-4a0d9e234bfc",
+                          "item/Title": "@items('Upsert_Realizat')?['cheie']",
+                          "item/Luna": "@items('Upsert_Realizat')?['luna']",
+                          "item/CentruCost": "@items('Upsert_Realizat')?['cc']",
+                          "item/Categorie": "@items('Upsert_Realizat')?['cat']",
+                          "item/Suma": "@float(items('Upsert_Realizat')?['suma'])",
+                          "item/Moneda": "@items('Upsert_Realizat')?['moneda']",
+                          "item/Suma_RON": "@float(items('Upsert_Realizat')?['suma_ron'])",
+                          "item/Nr_Documente": "@int(if(isInt(items('Upsert_Realizat')?['nr_documente']), items('Upsert_Realizat')?['nr_documente'], '0'))",
+                          "item/Aprobat_RON": "@outputs('Aprobat_RON')",
+                          "item/Maverick_RON": "@outputs('Maverick_RON')",
+                          "item/Sursa_Fisier": "@variables('varFisier')",
+                          "item/Rulare_ID": "@variables('varRulare')",
+                          "item/Data_Import": "@utcNow()"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "PostItem",
+                          "connectionName": "shared_sharepointonline"
+                        }
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Update_Realizat": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                            "table": "9eda943f-6a84-406f-ad20-4a0d9e234bfc",
+                            "id": "@first(outputs('Get_Realizat')?['body/value'])?['ID']",
+                            "item/Title": "@items('Upsert_Realizat')?['cheie']",
+                            "item/Luna": "@items('Upsert_Realizat')?['luna']",
+                            "item/CentruCost": "@items('Upsert_Realizat')?['cc']",
+                            "item/Categorie": "@items('Upsert_Realizat')?['cat']",
+                            "item/Suma": "@float(items('Upsert_Realizat')?['suma'])",
+                            "item/Moneda": "@items('Upsert_Realizat')?['moneda']",
+                            "item/Suma_RON": "@float(items('Upsert_Realizat')?['suma_ron'])",
+                            "item/Nr_Documente": "@int(if(isInt(items('Upsert_Realizat')?['nr_documente']), items('Upsert_Realizat')?['nr_documente'], '0'))",
+                            "item/Aprobat_RON": "@outputs('Aprobat_RON')",
+                            "item/Maverick_RON": "@outputs('Maverick_RON')",
+                            "item/Sursa_Fisier": "@variables('varFisier')",
+                            "item/Rulare_ID": "@variables('varRulare')",
+                            "item/Data_Import": "@utcNow()"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "operationId": "PatchItem",
+                            "connectionName": "shared_sharepointonline"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Set_varMav": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Get_Buget_Rand": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                      "table": "dff40545-aba0-4852-8949-dfa51b094819",
+                      "$filter": "Title eq '@{items('Upsert_Realizat')?['cheie']}'",
+                      "$top": 1
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "GetItems",
+                      "connectionName": "shared_sharepointonline"
+                    }
+                  },
+                  "runAfter": {
+                    "Cond_Exista_Realizat": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Cond_Exista_Buget": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@empty(outputs('Get_Buget_Rand')?['body/value'])",
+                          "@false"
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "Upd_Buget_Realizat": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                          "table": "dff40545-aba0-4852-8949-dfa51b094819",
+                          "id": "@first(outputs('Get_Buget_Rand')?['body/value'])?['ID']",
+                          "item/Title": "@items('Upsert_Realizat')?['cheie']",
+                          "item/Realizat_RON": "@float(items('Upsert_Realizat')?['suma_ron'])"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "PatchItem",
+                          "connectionName": "shared_sharepointonline"
+                        }
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {}
+                  },
+                  "runAfter": {
+                    "Get_Buget_Rand": [
+                      "Succeeded"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "Valideaza_Randuri": [
+                  "Succeeded"
+                ]
+              },
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 1
+                }
+              }
+            },
+            "Salveaza_Erori": {
+              "type": "Foreach",
+              "foreach": "@variables('varErori')",
+              "actions": {
+                "Create_Eroare": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                      "table": "342192f8-9083-4553-a046-31acf942ee1e",
+                      "item/Title": "@variables('varRulare')",
+                      "item/Fisier": "@variables('varFisier')",
+                      "item/Rand": "@int(if(isInt(items('Salveaza_Erori')?['rand']), items('Salveaza_Erori')?['rand'], '0'))",
+                      "item/Cheie": "@items('Salveaza_Erori')?['cheie']",
+                      "item/Tip_Eroare/Value": "@items('Salveaza_Erori')?['tip']",
+                      "item/Mesaj": "@items('Salveaza_Erori')?['mesaj']",
+                      "item/Data_Import": "@utcNow()"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "PostItem",
+                      "connectionName": "shared_sharepointonline"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Upsert_Realizat": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Analiza_CC": {
+              "type": "Foreach",
+              "description": "Sub_AnalizaCC (multi-instance secvențial)",
+              "foreach": "@body('Select_Coduri_CC')",
+              "actions": {
+                "Get_Bugete_CC": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                      "table": "dff40545-aba0-4852-8949-dfa51b094819",
+                      "$filter": "Luna eq '@{outputs('Luna_Import')}' and CentruCost eq '@{items('Analiza_CC')}'"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "GetItems",
+                      "connectionName": "shared_sharepointonline"
+                    }
+                  }
+                },
+                "Select_Categorii": {
+                  "type": "Select",
+                  "inputs": {
+                    "from": "@outputs('Get_Bugete_CC')?['body/value']",
+                    "select": {
+                      "categorie": "@item()?['Categorie']",
+                      "buget": "@coalesce(item()?['Buget_RON'], 0)",
+                      "angajat": "@coalesce(item()?['Angajat_RON'], 0)",
+                      "realizat": "@coalesce(item()?['Realizat_RON'], 0)",
+                      "maverick": "@coalesce(outputs('Mav_Luna')?[item()?['Title']], 0)"
+                    }
+                  },
+                  "runAfter": {
+                    "Get_Bugete_CC": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Buget_CC": {
+                  "type": "Compose",
+                  "inputs": "@float(formatNumber(float(xpath(xml(json(concat('{\"r\":{\"c\":', string(body('Select_Categorii')), '}}'))), 'sum(/r/c/buget)')), '0.00', 'en-US'))",
+                  "runAfter": {
+                    "Select_Categorii": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Angajat_CC": {
+                  "type": "Compose",
+                  "inputs": "@float(formatNumber(float(xpath(xml(json(concat('{\"r\":{\"c\":', string(body('Select_Categorii')), '}}'))), 'sum(/r/c/angajat)')), '0.00', 'en-US'))",
+                  "runAfter": {
+                    "Buget_CC": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Realizat_CC": {
+                  "type": "Compose",
+                  "inputs": "@{float(formatNumber(float(xpath(xml(json(concat('{\"r\":{\"c\":', string(body('Select_Categorii')), '}}'))), 'sum(/r/c/realizat)')), '0.00', 'en-US'))}\n",
+                  "runAfter": {
+                    "Angajat_CC": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Maverick_CC": {
+                  "type": "Compose",
+                  "inputs": "@float(formatNumber(float(xpath(xml(json(concat('{\"r\":{\"c\":', string(body('Select_Categorii')), '}}'))), 'sum(/r/c/maverick)')), '0.00', 'en-US'))",
+                  "runAfter": {
+                    "Realizat_CC": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Varianta_RON": {
+                  "type": "Compose",
+                  "inputs": "@float(formatNumber(sub(float(outputs('Realizat_CC')), float(outputs('Buget_CC'))), '0.00', 'en-US'))",
+                  "runAfter": {
+                    "Maverick_CC": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Varianta_Pct": {
+                  "type": "Compose",
+                  "inputs": "@float(formatNumber(div(mul(float(outputs('Varianta_RON')), 100), max(float(outputs('Buget_CC')), 0.01)), '0.00', 'en-US'))",
+                  "runAfter": {
+                    "Varianta_RON": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Alerta_Regula": {
+                  "type": "Compose",
+                  "inputs": "@if(lessOrEquals(max(float(outputs('Varianta_Pct')), mul(float(outputs('Varianta_Pct')), -1)), 5), 'Verde', if(lessOrEquals(max(float(outputs('Varianta_Pct')), mul(float(outputs('Varianta_Pct')), -1)), float(outputs('cfg')?['prag_alerta_pct'])), 'Galben', 'Roșu'))",
+                  "runAfter": {
+                    "Varianta_Pct": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "User_AI": {
+                  "type": "Compose",
+                  "inputs": "@json(concat('{\"luna\":\"', outputs('Luna_Import'), '\",\"centru_cost\":\"', items('Analiza_CC'), '\",\"buget_ron\":', string(outputs('Buget_CC')), ',\"angajat_ron\":', string(outputs('Angajat_CC')), ',\"realizat_ron\":', string(outputs('Realizat_CC')), ',\"varianta_ron\":', string(outputs('Varianta_RON')), ',\"varianta_pct\":', string(outputs('Varianta_Pct')), ',\"maverick_ron\":', string(outputs('Maverick_CC')), ',\"praguri\":{\"verde_max_pct\":5,\"galben_max_pct\":', outputs('cfg')?['prag_alerta_pct'], '},\"categorii\":', string(body('Select_Categorii')), '}'))",
+                  "runAfter": {
+                    "Alerta_Regula": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Get_Analiza": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                      "table": "01b7b9a6-234f-4d55-b0b6-a3c8f5fe70bf",
+                      "$filter": "Title eq '@{outputs('Luna_Import')}_@{items('Analiza_CC')}'",
+                      "$top": 1
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "GetItems",
+                      "connectionName": "shared_sharepointonline"
+                    }
+                  },
+                  "runAfter": {
+                    "User_AI": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Cond_Exista_Analiza": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@empty(outputs('Get_Analiza')?['body/value'])",
+                          "@true"
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "Create_Analiza": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                          "table": "01b7b9a6-234f-4d55-b0b6-a3c8f5fe70bf",
+                          "item/Title": "@concat(outputs('Luna_Import'), '_', items('Analiza_CC'))",
+                          "item/Luna": "@outputs('Luna_Import')",
+                          "item/CentruCost": "@items('Analiza_CC')",
+                          "item/Buget_RON": "@outputs('Buget_CC')",
+                          "item/Angajat_RON": "@outputs('Angajat_CC')",
+                          "item/Realizat_RON": "@outputs('Realizat_CC')",
+                          "item/Varianta_RON": "@outputs('Varianta_RON')",
+                          "item/Varianta_Pct": "@outputs('Varianta_Pct')",
+                          "item/Maverick_RON": "@outputs('Maverick_CC')",
+                          "item/Alerta_Regula/Value": "@outputs('Alerta_Regula')",
+                          "item/Status_Analiza/Value": "Eșuată",
+                          "item/Mesaj_Eroare": "Analiza AI nu a rulat încă.",
+                          "item/Rulare_ID": "@variables('varRulare')"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "PostItem",
+                          "connectionName": "shared_sharepointonline"
+                        }
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Update_Analiza": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                            "table": "01b7b9a6-234f-4d55-b0b6-a3c8f5fe70bf",
+                            "id": "@first(outputs('Get_Analiza')?['body/value'])?['ID']",
+                            "item/Title": "@concat(outputs('Luna_Import'), '_', items('Analiza_CC'))",
+                            "item/Luna": "@outputs('Luna_Import')",
+                            "item/CentruCost": "@items('Analiza_CC')",
+                            "item/Buget_RON": "@outputs('Buget_CC')",
+                            "item/Angajat_RON": "@outputs('Angajat_CC')",
+                            "item/Realizat_RON": "@outputs('Realizat_CC')",
+                            "item/Varianta_RON": "@outputs('Varianta_RON')",
+                            "item/Varianta_Pct": "@outputs('Varianta_Pct')",
+                            "item/Maverick_RON": "@outputs('Maverick_CC')",
+                            "item/Alerta_Regula/Value": "@outputs('Alerta_Regula')",
+                            "item/Status_Analiza/Value": "Eșuată",
+                            "item/Mesaj_Eroare": "Analiza AI nu a rulat încă.",
+                            "item/Rulare_ID": "@variables('varRulare')"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "operationId": "PatchItem",
+                            "connectionName": "shared_sharepointonline"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Get_Analiza": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "Id_Analiza": {
+                  "type": "Compose",
+                  "inputs": "@coalesce(first(outputs('Get_Analiza')?['body/value'])?['ID'], actions('Create_Analiza')?['outputs']?['body']?['ID'])",
+                  "runAfter": {
+                    "Cond_Exista_Analiza": [
+                      "Succeeded"
+                    ]
+                  }
+                },
+                "AI_Try": {
+                  "type": "Scope",
+                  "actions": {
+                    "Corp_Groq": {
+                      "type": "Compose",
+                      "inputs": "@setProperty(setProperty(json('{\"temperature\":0.2,\"response_format\":{\"type\":\"json_object\"}}'), 'model', coalesce(outputs('cfg')?['groq_model'], 'openai/gpt-oss-120b')), 'messages', createArray(setProperty(json('{\"role\":\"system\"}'), 'content', outputs('System_Prompt')), setProperty(json('{\"role\":\"user\"}'), 'content', string(outputs('User_AI')))))"
+                    },
+                    "HTTP_Groq": {
+                      "type": "Http",
+                      "inputs": {
+                        "uri": "https://api.groq.com/openai/v1/chat/completions",
+                        "method": "POST",
+                        "headers": {
+                          "Content-Type": "application/json",
+                          "Authorization": "Bearer @{parameters('GroqApiKey (bg_GroqApiKey)')}"
+                        },
+                        "body": "@outputs('Corp_Groq')\r\n",
+                        "retryPolicy": {
+                          "type": "fixed",
+                          "count": 4,
+                          "interval": "PT20S"
+                        }
+                      },
+                      "runAfter": {
+                        "Corp_Groq": [
+                          "Succeeded"
+                        ]
+                      },
+                      "limit": {
+                        "timeout": "PT3M"
+                      },
+                      "runtimeConfiguration": {
+                        "contentTransfer": {
+                          "transferMode": "Chunked"
+                        },
+                        "secureData": {
+                          "properties": [
+                            "inputs"
+                          ]
+                        }
+                      }
+                    },
+                    "AI_Text": {
+                      "type": "Compose",
+                      "inputs": "@replace(replace(replace(replace(body('HTTP_Groq')?['choices']?[0]?['message']?['content'], 'ţ', 'ț'), 'ş', 'ș'), 'Ţ', 'Ț'), 'Ş', 'Ș')",
+                      "runAfter": {
+                        "HTTP_Groq": [
+                          "SUCCEEDED"
+                        ]
+                      }
+                    },
+                    "Parse_AI": {
+                      "type": "ParseJson",
+                      "inputs": {
+                        "content": "@json(outputs('AI_Text'))",
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "comentariu": {
+                              "type": "string"
+                            },
+                            "cauze": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "nivel_alerta": {
+                              "type": "string",
+                              "enum": [
+                                "Verde",
+                                "Galben",
+                                "Roșu"
+                              ]
+                            },
+                            "actiune": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "comentariu",
+                            "cauze",
+                            "nivel_alerta",
+                            "actiune"
+                          ]
+                        }
+                      },
+                      "runAfter": {
+                        "AI_Text": [
+                          "SUCCEEDED"
+                        ]
+                      }
+                    },
+                    "Upd_Analiza_OK": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                          "table": "01b7b9a6-234f-4d55-b0b6-a3c8f5fe70bf",
+                          "id": "@outputs('Id_Analiza')",
+                          "item/Title": "@concat(outputs('Luna_Import'), '_', items('Analiza_CC'))",
+                          "item/Alerta_AI/Value": "@body('Parse_AI')?['nivel_alerta']",
+                          "item/Necesita_Revizuire": "@not(equals(body('Parse_AI')?['nivel_alerta'], outputs('Alerta_Regula')))",
+                          "item/Comentariu_AI": "@body('Parse_AI')?['comentariu']",
+                          "item/Cauze": "@join(body('Parse_AI')?['cauze'], decodeUriComponent('%0A'))",
+                          "item/Actiune": "@body('Parse_AI')?['actiune']",
+                          "item/Status_Analiza/Value": "OK",
+                          "item/Mesaj_Eroare": "—"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "PatchItem",
+                          "connectionName": "shared_sharepointonline"
+                        }
+                      },
+                      "runAfter": {
+                        "Parse_AI": [
+                          "SUCCEEDED"
+                        ]
+                      }
+                    },
+                    "Inc_AI_OK": {
+                      "type": "IncrementVariable",
+                      "inputs": {
+                        "name": "varAI_OK",
+                        "value": 1
+                      },
+                      "runAfter": {
+                        "Upd_Analiza_OK": [
+                          "SUCCEEDED"
+                        ]
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "Id_Analiza": [
+                      "SUCCEEDED"
+                    ]
+                  }
+                },
+                "AI_Catch": {
+                  "type": "Scope",
+                  "actions": {
+                    "Motiv_AI": {
+                      "type": "Compose",
+                      "inputs": "@if(equals(actions('HTTP_Groq')?['status'], 'Succeeded'), 'răspunsul AI nu respectă formatul JSON așteptat', if(equals(actions('HTTP_Groq')?['status'], 'TimedOut'), 'serviciul AI nu a răspuns în timp util', concat('HTTP ', string(coalesce(actions('HTTP_Groq')?['outputs']?['statusCode'], 'fără răspuns')), if(equals(string(actions('HTTP_Groq')?['outputs']?['statusCode']), '401'), ' – cheie API invalidă', if(equals(string(actions('HTTP_Groq')?['outputs']?['statusCode']), '429'), ' – limită de cereri', '')))))"
+                    },
+                    "Mesaj_AI_Esec": {
+                      "type": "Compose",
+                      "inputs": "@concat('Analiza AI pentru ', items('Analiza_CC'), ' a eșuat (', outputs('Motiv_AI'), '). Calculele sunt salvate; analiza poate fi reluată.')",
+                      "runAfter": {
+                        "Motiv_AI": [
+                          "SUCCEEDED"
+                        ]
+                      }
+                    },
+                    "Upd_Analiza_Esuata": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                          "table": "01b7b9a6-234f-4d55-b0b6-a3c8f5fe70bf",
+                          "id": "@outputs('Id_Analiza')",
+                          "item/Title": "@concat(outputs('Luna_Import'), '_', items('Analiza_CC'))",
+                          "item/Necesita_Revizuire": true,
+                          "item/Comentariu_AI": "Analiza AI nu este disponibilă pentru această rulare.",
+                          "item/Status_Analiza/Value": "Eșuată",
+                          "item/Mesaj_Eroare": "@outputs('Mesaj_AI_Esec')"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "PatchItem",
+                          "connectionName": "shared_sharepointonline"
+                        }
+                      },
+                      "runAfter": {
+                        "Mesaj_AI_Esec": [
+                          "SUCCEEDED"
+                        ]
+                      }
+                    },
+                    "Inc_AI_Esec": {
+                      "type": "IncrementVariable",
+                      "inputs": {
+                        "name": "varAI_Esec",
+                        "value": 1
+                      },
+                      "runAfter": {
+                        "Upd_Analiza_Esuata": [
+                          "SUCCEEDED"
+                        ]
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "AI_Try": [
+                      "FAILED",
+                      "TIMEDOUT"
+                    ]
+                  }
+                },
+                "Delay_Groq": {
+                  "type": "Wait",
+                  "inputs": {
+                    "interval": {
+                      "count": 15,
+                      "unit": "Second"
+                    }
+                  },
+                  "runAfter": {
+                    "Append_varRezCC": [
+                      "SUCCEEDED"
+                    ]
+                  }
+                },
+                "Append_varRezCC": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "varRezCC",
+                    "value": "@outputs('Rez_CC')"
+                  },
+                  "runAfter": {
+                    "Rez_CC": [
+                      "SUCCEEDED"
+                    ]
+                  }
+                },
+                "Rez_CC": {
+                  "type": "Compose",
+                  "inputs": {
+                    "cc": "@{items('Analiza_CC')}",
+                    "buget": "@{outputs('Buget_CC')}",
+                    "angajat": "@{outputs('Angajat_CC')}",
+                    "realizat": "@{outputs('Realizat_CC')}",
+                    "varianta_ron": "@{outputs('Varianta_RON')}",
+                    "varianta_pct": "@{outputs('Varianta_Pct')}",
+                    "maverick": "@{outputs('Maverick_CC')}",
+                    "alerta_regula": "@{outputs('Alerta_Regula')}",
+                    "alerta_ai": "@{coalesce(actions('Parse_AI')?['outputs']?['body']?['nivel_alerta'], '—')}",
+                    "status": "@{if(equals(actions('AI_Try')?['status'], 'Succeeded'), 'OK', 'Eșuată')}",
+                    "comentariu": "@{coalesce(actions('Parse_AI')?['outputs']?['body']?['comentariu'], actions('Mesaj_AI_Esec')?['outputs'], '')}",
+                    "actiune": "@{coalesce(actions('Parse_AI')?['outputs']?['body']?['actiune'], '')}"
+                  },
+                  "runAfter": {
+                    "AI_Catch": [
+                      "SUCCEEDED",
+                      "SKIPPED"
+                    ]
+                  }
+                }
+              },
+              "runAfter": {
+                "Mav_Luna": [
+                  "SUCCEEDED"
+                ]
+              },
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 1
+                }
+              }
+            },
+            "Filter_Duplicate": {
+              "type": "Query",
+              "inputs": {
+                "from": "@variables('varErori')",
+                "where": "@equals(item()?['tip'],'Duplicat')"
+              },
+              "runAfter": {
+                "Analiza_CC": [
+                  "SUCCEEDED",
+                  "FAILED"
+                ]
+              }
+            },
+            "Sumar_Import": {
+              "type": "Compose",
+              "inputs": {
+                "total": "@{length(body('Parse_Fisier')?['inregistrari'])}",
+                "valide": "@{length(variables('varValide'))}",
+                "invalide": "@{sub(length(variables('varErori')), length(body('Filter_Duplicate')))}",
+                "duplicate": "@{length(body('Filter_Duplicate'))}",
+                "erori": "@{length(variables('varErori'))}",
+                "ai_ok": "@{variables('varAI_OK')}",
+                "ai_esec": "@{variables('varAI_Esec')}"
+              },
+              "runAfter": {
+                "Filter_Duplicate": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Select_Rand_CC": {
+              "type": "Select",
+              "inputs": {
+                "from": "@variables('varRezCC')",
+                "select": "@concat('<tr><td style=\"padding:8px;border-top:1px solid #e5e7eb\"><b>', item()?['cc'], '</b></td><td align=\"right\" style=\"padding:8px;border-top:1px solid #e5e7eb\">', formatNumber(float(item()?['buget']), 'N0', 'ro-RO'), '</td><td align=\"right\" style=\"padding:8px;border-top:1px solid #e5e7eb\">', formatNumber(float(item()?['realizat']), 'N0', 'ro-RO'), '</td><td align=\"right\" style=\"padding:8px;border-top:1px solid #e5e7eb;color:', if(greater(float(item()?['varianta_ron']), 0), '#b42318', '#15803d'), '\">', concat(if(greater(float(item()?['varianta_ron']), 0), '+', ''), formatNumber(float(item()?['varianta_ron']), 'N0', 'ro-RO')), '</td><td align=\"right\" style=\"padding:8px;border-top:1px solid #e5e7eb;color:', if(greater(float(item()?['varianta_ron']), 0), '#b42318', '#15803d'), ';font-weight:600\">', concat(concat(if(greater(float(item()?['varianta_pct']), 0), '+', ''), formatNumber(float(item()?['varianta_pct']), 'N2', 'ro-RO')), '%'), '</td><td align=\"right\" style=\"padding:8px;border-top:1px solid #e5e7eb;color:', if(greater(float(item()?['maverick']), 0), '#b42318', '#9ca3af'), '\">', formatNumber(float(item()?['maverick']), 'N0', 'ro-RO'), '</td><td align=\"center\" style=\"padding:8px;border-top:1px solid #e5e7eb\"><span style=\"display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:600;background:', if(equals(item()?['alerta_regula'], 'Roșu'), '#fee4e2', if(equals(item()?['alerta_regula'], 'Galben'), '#fef3c7', if(equals(item()?['alerta_regula'], 'Verde'), '#dcfce7', '#f3f4f6'))), ';color:', if(equals(item()?['alerta_regula'], 'Roșu'), '#b42318', if(equals(item()?['alerta_regula'], 'Galben'), '#92400e', if(equals(item()?['alerta_regula'], 'Verde'), '#166534', '#6b7280'))), '\">', item()?['alerta_regula'], '</span></td><td align=\"center\" style=\"padding:8px;border-top:1px solid #e5e7eb\"><span style=\"display:inline-block;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:600;background:', if(equals(item()?['alerta_ai'], 'Roșu'), '#fee4e2', if(equals(item()?['alerta_ai'], 'Galben'), '#fef3c7', if(equals(item()?['alerta_ai'], 'Verde'), '#dcfce7', '#f3f4f6'))), ';color:', if(equals(item()?['alerta_ai'], 'Roșu'), '#b42318', if(equals(item()?['alerta_ai'], 'Galben'), '#92400e', if(equals(item()?['alerta_ai'], 'Verde'), '#166534', '#6b7280'))), '\">', item()?['alerta_ai'], '</span>', if(and(equals(item()?['status'], 'OK'), not(equals(item()?['alerta_ai'], item()?['alerta_regula']))), '<div style=\"font-size:11px;color:#b45309;font-weight:600;margin-top:3px\">⚠ necesită revizuire</div>', if(equals(item()?['status'], 'OK'), '', '<div style=\"font-size:11px;color:#6b7280;margin-top:3px\">AI indisponibil</div>')), '</td></tr>')"
+              },
+              "runAfter": {
+                "Tot_Raport": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Select_Rand_Err": {
+              "type": "Select",
+              "inputs": {
+                "from": "@variables('varErori')",
+                "select": "@concat('<tr><td valign=\"top\" style=\"padding:6px 8px;border-top:1px solid #e5e7eb\">', item()?['rand'], '</td><td valign=\"top\" style=\"padding:6px 8px;border-top:1px solid #e5e7eb;color:#b42318\">', item()?['tip'], '</td><td valign=\"top\" style=\"padding:6px 8px;border-top:1px solid #e5e7eb;color:#374151\">', item()?['mesaj'], '</td></tr>')"
+              },
+              "runAfter": {
+                "Select_Rand_Mav": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Select_Rand_Teams": {
+              "type": "Select",
+              "inputs": {
+                "from": "@variables('varRezCC')",
+                "select": "@concat(if(equals(item()?['alerta_regula'], 'Roșu'), '🔴', if(equals(item()?['alerta_regula'], 'Galben'), '🟡', '🟢')), ' ', item()?['cc'], ' ', item()?['varianta_pct'], '%')"
+              },
+              "runAfter": {
+                "Sablon_Raport": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Html_Raport": {
+              "type": "Compose",
+              "inputs": "@replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(outputs('Sablon_Raport'), '{{LUNA}}', outputs('Luna_Import')), '{{FISIER}}', variables('varFisier')), '{{RULARE_ID}}', variables('varRulare')), '{{CURS_INFO}}', concat('BNR ', variables('varDataCurs'), ': EUR ', string(variables('varCursuri')?['EUR']), ', USD ', string(variables('varCursuri')?['USD']))), '{{TOT_BUGET}}', formatNumber(float(outputs('Tot_Raport')?['buget']), 'N0', 'ro-RO')), '{{TOT_REALIZAT}}', formatNumber(float(outputs('Tot_Raport')?['realizat']), 'N0', 'ro-RO')), '{{TOT_VAR_CULOARE}}', if(greater(float(outputs('Tot_Raport')?['varianta_pct']), 0), '#b42318', '#15803d')), '{{TOT_VAR_PCT}}', concat(concat(if(greater(float(outputs('Tot_Raport')?['varianta_pct']), 0), '+', ''), formatNumber(float(outputs('Tot_Raport')?['varianta_pct']), 'N2', 'ro-RO')), '%')), '{{TOT_MAV_CULOARE}}', if(greater(float(outputs('Tot_Raport')?['maverick']), 0), '#b42318', '#1f2937')), '{{TOT_MAVERICK}}', formatNumber(float(outputs('Tot_Raport')?['maverick']), 'N0', 'ro-RO')), '{{N_TOTAL}}', string(outputs('Sumar_Import')?['total'])), '{{N_AI_OK}}', string(outputs('Sumar_Import')?['ai_ok'])), '{{N_VALIDE}}', string(outputs('Sumar_Import')?['valide'])), '{{N_AI_ESEC}}', string(outputs('Sumar_Import')?['ai_esec'])), '{{N_INVALIDE}}', string(outputs('Sumar_Import')?['invalide'])), '{{N_DUPLICATE}}', string(outputs('Sumar_Import')?['duplicate'])), '{{ROWS_CC}}', join(body('Select_Rand_CC'), '')), '{{PRAG_ALERTA}}', string(outputs('cfg')?['prag_alerta_pct'])), '{{BLOCURI_AI}}', join(body('Select_Bloc_AI'), '')), '{{ROWS_MAVERICK}}', if(empty(body('Select_Rand_Mav')), '<tr><td colspan=\"4\" style=\"padding:6px 8px;border-top:1px solid #e5e7eb;color:#6b7280\">Nicio cheltuială fără cerere aprobată.</td></tr>', join(body('Select_Rand_Mav'), ''))), '{{ROWS_ERORI}}', if(empty(body('Select_Rand_Err')), '<tr><td colspan=\"3\" style=\"padding:6px 8px;border-top:1px solid #e5e7eb;color:#6b7280\">Nicio înregistrare respinsă.</td></tr>', join(body('Select_Rand_Err'), ''))), '{{DATA_RAPORT}}', convertTimeZone(utcNow(), 'UTC', 'GTB Standard Time', 'dd.MM.yyyy HH:mm'))",
+              "runAfter": {
+                "Select_Rand_Teams": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Email_Raport": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "emailMessage/To": "@outputs('cfg')?['email_echipa']",
+                  "emailMessage/Bcc": "@if(equals(outputs('cfg')?['mod_demo'], 'true'), outputs('cfg')?['email_bcc'], '')",
+                  "emailMessage/Subject": "[BudgetGuard] Buget vs. Realizat @{outputs('Luna_Import')} – @{outputs('Sumar_Import')?['valide']} valide, @{outputs('Sumar_Import')?['erori']} respinse",
+                  "emailMessage/Body": "<p class=\"editor-paragraph\">@{outputs('Html_Raport')}</p>"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_gmail",
+                  "operationId": "SendEmailV2",
+                  "connectionName": "shared_gmail"
+                }
+              },
+              "runAfter": {
+                "Html_Raport": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Html_Teams_Raport": {
+              "type": "Compose",
+              "inputs": "<p>📊 <b>Import @{outputs('Luna_Import')}</b> (@{variables('varFisier')}): @{outputs('Sumar_Import')?['valide']} valide, @{outputs('Sumar_Import')?['erori']} respinse · AI @{outputs('Sumar_Import')?['ai_ok']} OK / @{outputs('Sumar_Import')?['ai_esec']} eșuate</p>\n<p>@{join(body('Select_Rand_Teams'), ' · ')}</p>",
+              "runAfter": {
+                "Email_Raport": [
+                  "SUCCEEDED",
+                  "FAILED"
+                ]
+              }
+            },
+            "Teams_Raport": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "poster": "Flow bot",
+                  "location": "Channel",
+                  "body/recipient/groupId": "@outputs('cfg')?['teams_team_id']",
+                  "body/recipient/channelId": "@outputs('cfg')?['teams_channel_id']",
+                  "body/messageBody": "<p class=\"editor-paragraph\">@{outputs('Html_Teams_Raport')}</p>"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+                  "operationId": "PostMessageToConversation",
+                  "connectionName": "shared_teams"
+                }
+              },
+              "runAfter": {
+                "Html_Teams_Raport": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Create_Arhiva": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                  "folderPath": "/Import_Realizat/Procesate",
+                  "name": "@concat(replace(variables('varFisier'), '.json', ''), '_', variables('varRulare'), '.json')",
+                  "body": "@outputs('Fisier_Text')"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "CreateFile",
+                  "connectionName": "shared_sharepointonline"
+                }
+              },
+              "runAfter": {
+                "Teams_Raport": [
+                  "SUCCEEDED"
+                ]
+              },
+              "runtimeConfiguration": {
+                "contentTransfer": {
+                  "transferMode": "Chunked"
+                }
+              }
+            },
+            "Delete_Original": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                  "id": "@triggerOutputs()?['body/{Identifier}']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "DeleteFile",
+                  "connectionName": "shared_sharepointonline"
+                }
+              },
+              "runAfter": {
+                "Create_Arhiva": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Log_Import": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                  "table": "ed8c277f-09a0-4732-b257-398199e56f8f",
+                  "item/Title": "@variables('varRulare')",
+                  "item/Flux/Value": "F2",
+                  "item/Stare_Veche": "Fișier nou",
+                  "item/Stare_Noua": "Import finalizat",
+                  "item/Actor": "BudgetGuard (import automat)",
+                  "item/Data_Ora": "@utcNow()",
+                  "item/Comentariu": "@concat(variables('varFisier'), ': ', outputs('Sumar_Import')?['valide'], ' valide, ', outputs('Sumar_Import')?['erori'], ' respinse; AI ', outputs('Sumar_Import')?['ai_ok'], ' OK / ', outputs('Sumar_Import')?['ai_esec'], ' eșuate; curs ', variables('varDataCurs'), '.')"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "PostItem",
+                  "connectionName": "shared_sharepointonline"
+                }
+              },
+              "runAfter": {
+                "Delete_Original": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Get_Realizat_Luna": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                  "table": "9eda943f-6a84-406f-ad20-4a0d9e234bfc",
+                  "$filter": "Luna eq '@{outputs('Luna_Import')}'",
+                  "$top": 500
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetItems",
+                  "connectionName": "shared_sharepointonline"
+                }
+              },
+              "runAfter": {
+                "Salveaza_Erori": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Select_Mav_Luna": {
+              "type": "Select",
+              "inputs": {
+                "from": "@outputs('Get_Realizat_Luna')?['body/value']",
+                "select": "@concat('\"', item()?['Title'], '\":', string(coalesce(item()?['Maverick_RON'], 0)))"
+              },
+              "runAfter": {
+                "Get_Realizat_Luna": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Mav_Luna": {
+              "type": "Compose",
+              "inputs": "@json(concat('{', join(body('Select_Mav_Luna'), ','), '}'))",
+              "runAfter": {
+                "Select_Mav_Luna": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Json_RezCC": {
+              "type": "Compose",
+              "inputs": "@json(concat('{\"r\":{\"c\":', string(variables('varRezCC')), '}}'))",
+              "runAfter": {
+                "Sumar_Import": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Tot_Raport": {
+              "type": "Compose",
+              "inputs": {
+                "buget": "@{xpath(xml(outputs('Json_RezCC')), 'sum(/r/c/buget)')}",
+                "realizat": "@{xpath(xml(outputs('Json_RezCC')), 'sum(/r/c/realizat)')}",
+                "maverick": "@{xpath(xml(outputs('Json_RezCC')), 'sum(/r/c/maverick)')}",
+                "varianta_pct": "@{div(mul(sub(float(xpath(xml(outputs('Json_RezCC')), 'sum(/r/c/realizat)')), float(xpath(xml(outputs('Json_RezCC')), 'sum(/r/c/buget)'))), 100), max(float(xpath(xml(outputs('Json_RezCC')), 'sum(/r/c/buget)')), 0.01))}"
+              },
+              "runAfter": {
+                "Json_RezCC": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Select_Bloc_AI": {
+              "type": "Select",
+              "inputs": {
+                "from": "@variables('varRezCC')",
+                "select": "@concat('<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin-top:10px;border-collapse:collapse\"><tr><td style=\"border-left:4px solid ', if(equals(item()?['alerta_ai'], 'Roșu'), '#b42318', if(equals(item()?['alerta_ai'], 'Galben'), '#92400e', if(equals(item()?['alerta_ai'], 'Verde'), '#166534', '#6b7280'))), ';background:#f9fafb;padding:10px 14px\"><div style=\"font-size:14px\"><b>', item()?['cc'], '</b> <span style=\"display:inline-block;padding:1px 8px;margin-left:4px;border-radius:10px;font-size:11px;font-weight:600;background:', if(equals(item()?['alerta_ai'], 'Roșu'), '#fee4e2', if(equals(item()?['alerta_ai'], 'Galben'), '#fef3c7', if(equals(item()?['alerta_ai'], 'Verde'), '#dcfce7', '#f3f4f6'))), ';color:', if(equals(item()?['alerta_ai'], 'Roșu'), '#b42318', if(equals(item()?['alerta_ai'], 'Galben'), '#92400e', if(equals(item()?['alerta_ai'], 'Verde'), '#166534', '#6b7280'))), '\">', item()?['alerta_ai'], '</span>', if(and(equals(item()?['status'], 'OK'), not(equals(item()?['alerta_ai'], item()?['alerta_regula']))), concat(' <span style=\"font-size:11px;color:#b45309;font-weight:600;margin-left:6px\">⚠ necesită revizuire (regula: ', item()?['alerta_regula'], ')</span>'), if(equals(item()?['status'], 'OK'), '', ' <span style=\"font-size:11px;color:#6b7280;margin-left:6px\">analiza AI a eșuat</span>')), '</div><div style=\"font-size:13px;margin-top:6px;color:#1f2937\">', item()?['comentariu'], '</div>', if(empty(item()?['actiune']), '', concat('<div style=\"font-size:13px;margin-top:6px;color:#374151\"><b>Acțiune recomandată:</b> ', item()?['actiune'], '</div>')), '</td></tr></table>')"
+              },
+              "runAfter": {
+                "Select_Rand_CC": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Filter_Mav": {
+              "type": "Query",
+              "inputs": {
+                "from": "@outputs('Get_Realizat_Luna')?['body/value']",
+                "where": "@greater(float(coalesce(item()?['Maverick_RON'], 0)), 0)"
+              },
+              "runAfter": {
+                "Select_Bloc_AI": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Select_Rand_Mav": {
+              "type": "Select",
+              "inputs": {
+                "from": "@body('Filter_Mav')",
+                "select": "@concat('<tr><td style=\"padding:6px 8px;border-top:1px solid #e5e7eb\">', item()?['Title'], '</td><td align=\"right\" style=\"padding:6px 8px;border-top:1px solid #e5e7eb\">', formatNumber(float(item()?['Suma_RON']), 'N0', 'ro-RO'), '</td><td align=\"right\" style=\"padding:6px 8px;border-top:1px solid #e5e7eb\">', formatNumber(float(item()?['Aprobat_RON']), 'N0', 'ro-RO'), '</td><td align=\"right\" style=\"padding:6px 8px;border-top:1px solid #e5e7eb;color:#b42318;font-weight:600\">', formatNumber(float(item()?['Maverick_RON']), 'N0', 'ro-RO'), '</td></tr>')"
+              },
+              "runAfter": {
+                "Filter_Mav": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Sablon_Raport": {
+              "type": "Compose",
+              "inputs": "<!-- BudgetGuard: monthly Budget vs. Actual report. Inline CSS only (Outlook/Gmail ignore <style>).\n     Placeholders (UPPERCASE names in double curly braces) are replaced by render_preview.py (preview) and by the Html_Raport action (flow).\n     Repeated rows come from report/fragments/*.html. Do not use the at-sign in this file: the flow designer\n     would read it as the start of an expression. -->\n<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background:#f3f4f6;padding:16px 0\">\n<tr><td align=\"center\">\n<table role=\"presentation\" width=\"760\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width:100%;max-width:760px;background:#ffffff;border:1px solid #e5e7eb;font-family:Segoe UI,Arial,Helvetica,sans-serif;color:#1f2937;font-size:14px;line-height:1.45\">\n\n  <!-- 1. Header -->\n  <tr><td style=\"background:#1e3a8a;padding:18px 24px\">\n    <div style=\"font-size:12px;color:#c7d2fe;letter-spacing:0.5px\">BUDGETGUARD · VESTRA RETAIL SRL</div>\n    <div style=\"font-size:20px;font-weight:600;color:#ffffff;margin-top:2px\">Buget vs. Realizat · {{LUNA}}</div>\n  </td></tr>\n  <tr><td style=\"padding:10px 24px;background:#eef2ff;font-size:12px;color:#4b5563\">\n    Fișier <b style=\"color:#1f2937\">{{FISIER}}</b> · rulare {{RULARE_ID}} · curs {{CURS_INFO}}\n  </td></tr>\n\n  <!-- KPI tiles -->\n  <tr><td style=\"padding:20px 24px 4px\">\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr>\n      <td width=\"25%\" valign=\"top\" style=\"padding:0 6px 0 0\">\n        <div style=\"border:1px solid #e5e7eb;padding:10px 12px\">\n          <div style=\"font-size:11px;color:#6b7280;text-transform:uppercase\">Buget</div>\n          <div style=\"font-size:18px;font-weight:600\">{{TOT_BUGET}}</div>\n        </div></td>\n      <td width=\"25%\" valign=\"top\" style=\"padding:0 6px\">\n        <div style=\"border:1px solid #e5e7eb;padding:10px 12px\">\n          <div style=\"font-size:11px;color:#6b7280;text-transform:uppercase\">Realizat</div>\n          <div style=\"font-size:18px;font-weight:600\">{{TOT_REALIZAT}}</div>\n        </div></td>\n      <td width=\"25%\" valign=\"top\" style=\"padding:0 6px\">\n        <div style=\"border:1px solid #e5e7eb;padding:10px 12px\">\n          <div style=\"font-size:11px;color:#6b7280;text-transform:uppercase\">Varianță</div>\n          <div style=\"font-size:18px;font-weight:600;color:{{TOT_VAR_CULOARE}}\">{{TOT_VAR_PCT}}</div>\n        </div></td>\n      <td width=\"25%\" valign=\"top\" style=\"padding:0 0 0 6px\">\n        <div style=\"border:1px solid #e5e7eb;padding:10px 12px\">\n          <div style=\"font-size:11px;color:#6b7280;text-transform:uppercase\">Fără cerere aprobată</div>\n          <div style=\"font-size:18px;font-weight:600;color:{{TOT_MAV_CULOARE}}\">{{TOT_MAVERICK}}</div>\n        </div></td>\n    </tr></table>\n    <div style=\"font-size:11px;color:#6b7280;padding-top:6px\">Sume în RON. Varianța = Realizat − Buget, raportată la buget.</div>\n  </td></tr>\n\n  <!-- 2. Import summary -->\n  <tr><td style=\"padding:16px 24px 0\">\n    <div style=\"font-size:15px;font-weight:600;padding-bottom:6px;border-bottom:2px solid #1e3a8a\">Sumar import</div>\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"font-size:13px;margin-top:8px\">\n      <tr>\n        <td style=\"padding:4px 0;color:#4b5563\">Înregistrări în fișier</td><td align=\"right\" style=\"padding:4px 16px 4px 0\"><b>{{N_TOTAL}}</b></td>\n        <td style=\"padding:4px 0 4px 16px;color:#4b5563;border-left:1px solid #e5e7eb\">Analize AI reușite</td><td align=\"right\" style=\"padding:4px 0\"><b>{{N_AI_OK}}</b></td>\n      </tr>\n      <tr>\n        <td style=\"padding:4px 0;color:#4b5563\">Valide (salvate)</td><td align=\"right\" style=\"padding:4px 16px 4px 0\"><b style=\"color:#15803d\">{{N_VALIDE}}</b></td>\n        <td style=\"padding:4px 0 4px 16px;color:#4b5563;border-left:1px solid #e5e7eb\">Analize AI eșuate</td><td align=\"right\" style=\"padding:4px 0\"><b>{{N_AI_ESEC}}</b></td>\n      </tr>\n      <tr>\n        <td style=\"padding:4px 0;color:#4b5563\">Invalide</td><td align=\"right\" style=\"padding:4px 16px 4px 0\"><b style=\"color:#b42318\">{{N_INVALIDE}}</b></td>\n        <td style=\"padding:4px 0 4px 16px;color:#4b5563;border-left:1px solid #e5e7eb\">Duplicate ignorate</td><td align=\"right\" style=\"padding:4px 0\"><b style=\"color:#b45309\">{{N_DUPLICATE}}</b></td>\n      </tr>\n    </table>\n  </td></tr>\n\n  <!-- 3. Budget vs. Actual by cost centre -->\n  <tr><td style=\"padding:20px 24px 0\">\n    <div style=\"font-size:15px;font-weight:600;padding-bottom:6px;border-bottom:2px solid #1e3a8a\">Buget vs. Realizat pe centre de cost</div>\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"font-size:13px;margin-top:8px;border-collapse:collapse\">\n      <tr style=\"background:#f9fafb;color:#4b5563;font-size:12px\">\n        <th align=\"left\" style=\"padding:8px\">CC</th>\n        <th align=\"right\" style=\"padding:8px\">Buget</th>\n        <th align=\"right\" style=\"padding:8px\">Realizat</th>\n        <th align=\"right\" style=\"padding:8px\">Varianță</th>\n        <th align=\"right\" style=\"padding:8px\">%</th>\n        <th align=\"right\" style=\"padding:8px\">Fără cerere</th>\n        <th align=\"center\" style=\"padding:8px\">Regulă</th>\n        <th align=\"center\" style=\"padding:8px\">AI</th>\n      </tr>\n      {{ROWS_CC}}\n    </table>\n    <div style=\"font-size:11px;color:#6b7280;padding-top:6px\">Regulă: |varianță| ≤ 5% Verde, ≤ {{PRAG_ALERTA}}% Galben, peste Roșu. AI: aceeași regulă, plus cel puțin Galben dacă există cheltuieli fără cerere aprobată.</div>\n  </td></tr>\n\n  <!-- 4. AI commentary -->\n  <tr><td style=\"padding:20px 24px 0\">\n    <div style=\"font-size:15px;font-weight:600;padding-bottom:6px;border-bottom:2px solid #1e3a8a\">Comentariile analistului AI</div>\n    {{BLOCURI_AI}}\n  </td></tr>\n\n  <!-- 5. Anomalies -->\n  <tr><td style=\"padding:20px 24px 0\">\n    <div style=\"font-size:15px;font-weight:600;padding-bottom:6px;border-bottom:2px solid #1e3a8a\">Anomalii</div>\n    <div style=\"font-size:13px;font-weight:600;margin:10px 0 4px\">Cheltuieli fără cerere aprobată (maverick spending)</div>\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"font-size:13px;border-collapse:collapse\">\n      <tr style=\"background:#f9fafb;color:#4b5563;font-size:12px\">\n        <th align=\"left\" style=\"padding:6px 8px\">Cheie</th>\n        <th align=\"right\" style=\"padding:6px 8px\">Realizat</th>\n        <th align=\"right\" style=\"padding:6px 8px\">Aprobat prin cereri</th>\n        <th align=\"right\" style=\"padding:6px 8px\">Fără cerere</th>\n      </tr>\n      {{ROWS_MAVERICK}}\n    </table>\n    <div style=\"font-size:13px;font-weight:600;margin:16px 0 4px\">Înregistrări respinse la import</div>\n    <table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"font-size:13px;border-collapse:collapse\">\n      <tr style=\"background:#f9fafb;color:#4b5563;font-size:12px\">\n        <th align=\"left\" style=\"padding:6px 8px;width:48px\">Rând</th>\n        <th align=\"left\" style=\"padding:6px 8px;width:150px\">Tip</th>\n        <th align=\"left\" style=\"padding:6px 8px\">Detalii</th>\n      </tr>\n      {{ROWS_ERORI}}\n    </table>\n  </td></tr>\n\n  <!-- 6. Footer -->\n  <tr><td style=\"padding:24px;font-size:11px;color:#9ca3af\">\n    Raport generat automat de BudgetGuard la {{DATA_RAPORT}}. Datele detaliate sunt în listele SharePoint Realizat_Lunar, Analize_AI și Erori_Import. Comentariile AI sunt orientative; rândurile marcate „necesită revizuire” au o alertă AI diferită de regula de calcul.\n  </td></tr>\n\n</table>\n</td></tr>\n</table>",
+              "runAfter": {
+                "Select_Rand_Err": [
+                  "SUCCEEDED"
+                ]
+              }
+            }
+          },
+          "runAfter": {
+            "varDataCurs": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Scope_Catch": {
+          "type": "Scope",
+          "actions": {
+            "Filter_Esec": {
+              "type": "Query",
+              "inputs": {
+                "from": "@result('Scope_Try')",
+                "where": "@equals(item()?['status'],'Failed')"
+              }
+            },
+            "Actiune_Esuata": {
+              "type": "Compose",
+              "inputs": "@coalesce(first(body('Filter_Esec'))?['name'], 'necunoscută')",
+              "runAfter": {
+                "Filter_Esec": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Detaliu_Esec": {
+              "type": "Compose",
+              "inputs": "@coalesce(first(body('Filter_Esec'))?['error']?['message'], first(body('Filter_Esec'))?['outputs']?['body']?['error']?['message'], 'fără detalii')",
+              "runAfter": {
+                "Actiune_Esuata": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Mesaj_Esec": {
+              "type": "Compose",
+              "inputs": "@if(or(equals(outputs('Actiune_Esuata'), 'Fisier_JSON'), equals(outputs('Actiune_Esuata'), 'Fisier_Text'), contains(outputs('Detaliu_Esec'), 'not a valid JSON')), concat('Fișierul „', variables('varFisier'), '” nu este un JSON valid (verificați acoladele, ghilimelele și virgulele). Nicio înregistrare nu a fost importată.'), if(equals(outputs('Actiune_Esuata'), 'Parse_Fisier'), concat('Fișierul „', variables('varFisier'), '” nu are structura așteptată: lista „inregistrari” lipsește sau este goală. Nicio înregistrare nu a fost importată.'), concat('Importul fișierului „', variables('varFisier'), '” a eșuat la pasul ', outputs('Actiune_Esuata'), '. Rândurile procesate până la eroare au rămas salvate; după corectare, reîncărcați fișierul (importul nu creează dubluri).')))",
+              "runAfter": {
+                "Detaliu_Esec": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Html_Esec": {
+              "type": "Compose",
+              "inputs": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#222;max-width:640px\">\n  <div style=\"background:#b42318;color:#fff;padding:12px 16px;font-size:16px;font-weight:600\">BudgetGuard · Import eșuat</div>\n  <div style=\"padding:16px;border:1px solid #ddd;border-top:none\">\n    <p>@{outputs('Mesaj_Esec')}</p>\n    <table style=\"border-collapse:collapse;font-size:13px\">\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Fișier</td><td>@{variables('varFisier')}</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Acțiunea care a eșuat</td><td>@{outputs('Actiune_Esuata')}</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Detalii tehnice</td><td style=\"font-family:Consolas,monospace;font-size:12px\">@{outputs('Detaliu_Esec')}</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Rulare</td><td>@{variables('varRulare')}</td></tr>\n    </table>\n    <p>Fișierul a rămas în biblioteca Import_Realizat. Corectați-l, ștergeți-l și încărcați-l din nou.</p>\n    <p style=\"font-size:12px;color:#888\">Mesaj automat BudgetGuard · @{convertTimeZone(utcNow(), 'UTC', 'GTB Standard Time', 'dd.MM.yyyy HH:mm')}</p>\n  </div>\n</div>",
+              "runAfter": {
+                "Mesaj_Esec": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Email_Esec": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "emailMessage/To": "@outputs('cfg')?['email_echipa']",
+                  "emailMessage/Subject": "[BudgetGuard] Import eșuat – @{variables('varFisier')}",
+                  "emailMessage/Body": "<p class=\"editor-paragraph\">@{outputs('Html_Esec')}</p>"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_gmail",
+                  "operationId": "SendEmailV2",
+                  "connectionName": "shared_gmail"
+                }
+              },
+              "runAfter": {
+                "Html_Esec": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Teams_Esec": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "poster": "Flow bot",
+                  "location": "Channel",
+                  "body/recipient/groupId": "@outputs('cfg')?['teams_team_id']",
+                  "body/recipient/channelId": "@outputs('cfg')?['teams_channel_id']",
+                  "body/messageBody": "<p class=\"editor-paragraph\">@{outputs('Html_Esec')}</p>"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+                  "operationId": "PostMessageToConversation",
+                  "connectionName": "shared_teams"
+                }
+              },
+              "runAfter": {
+                "Email_Esec": [
+                  "SUCCEEDED"
+                ]
+              }
+            },
+            "Log_Esec": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                  "table": "ed8c277f-09a0-4732-b257-398199e56f8f",
+                  "item/Title": "@variables('varRulare')",
+                  "item/Flux/Value": "F2",
+                  "item/Stare_Veche": "Fișier nou",
+                  "item/Stare_Noua": "Import eșuat",
+                  "item/Actor": "BudgetGuard (import automat)",
+                  "item/Data_Ora": "@utcNow()",
+                  "item/Comentariu": "@concat(outputs('Actiune_Esuata'), ': ', outputs('Detaliu_Esec'))"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "PostItem",
+                  "connectionName": "shared_sharepointonline"
+                }
+              },
+              "runAfter": {
+                "Teams_Esec": [
+                  "SUCCEEDED"
+                ]
+              }
+            }
+          },
+          "runAfter": {
+            "Scope_Try": [
+              "FAILED",
+              "TIMEDOUT"
+            ]
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

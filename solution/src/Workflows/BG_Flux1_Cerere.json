@@ -1,0 +1,1781 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_microsoftforms": {
+        "api": {
+          "name": "shared_microsoftforms"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "bg_sharedmicrosoftforms_39dd6"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_sharepointonline": {
+        "api": {
+          "name": "shared_sharepointonline"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "bg_sharedsharepointonline_14880"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_teams": {
+        "api": {
+          "name": "shared_teams"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "bg_sharedteams_a3c79"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_gmail": {
+        "api": {
+          "name": "shared_gmail"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "bg_sharedgmail_86357"
+        },
+        "runtimeSource": "embedded"
+      },
+      "shared_approvals-1": {
+        "api": {
+          "name": "shared_approvals"
+        },
+        "connection": {
+          "connectionReferenceLogicalName": "bg_sharedapprovals_b5da2"
+        },
+        "runtimeSource": "embedded"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "When_a_new_response_is_submitted": {
+          "type": "OpenApiConnectionWebhook",
+          "inputs": {
+            "parameters": {
+              "form_id": "xl4Yfoas9k6zq_DiJKIc1nE31MNiDB5AlJVdH4PzAd9UNEkzUzMyMEc1WE1UTjJDRkRHREJIRzRQNi4u"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_microsoftforms",
+              "operationId": "CreateFormWebhook",
+              "connectionName": "shared_microsoftforms"
+            }
+          },
+          "splitOn": "@triggerOutputs()?['body/value']",
+          "metadata": {
+            "operationMetadataId": "f92ab85f-f4aa-4a79-a072-d818bf281adf"
+          }
+        }
+      },
+      "actions": {
+        "Get_response_details": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "form_id": "xl4Yfoas9k6zq_DiJKIc1nE31MNiDB5AlJVdH4PzAd9UNEkzUzMyMEc1WE1UTjJDRkRHREJIRzRQNi4u",
+              "response_id": "@triggerOutputs()?['body/resourceData/responseId']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_microsoftforms",
+              "operationId": "GetFormResponseById",
+              "connectionName": "shared_microsoftforms"
+            }
+          },
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "c0f6c791-edd2-42f9-91bf-72ec2a511a82"
+          }
+        },
+        "Date_Formular": {
+          "type": "Compose",
+          "inputs": {
+            "titlu": "@{outputs('Get_response_details')?['body/rf04411a4dd3241459aebc926731e7c38']}",
+            "centru_cost": "@{outputs('Get_response_details')?['body/ra874919e3a914fccba0c0bf635b89eaf']}",
+            "categorie": "@{outputs('Get_response_details')?['body/rbb3639afff98496a9fc44059af16eea3']}",
+            "cui": "@{outputs('Get_response_details')?['body/r41b3b3a372ac48d798df799ee8d024f9']}",
+            "valoare": "@{outputs('Get_response_details')?['body/rd09f8e08e10140b48d4ae71506adc86a']}",
+            "moneda": "@{outputs('Get_response_details')?['body/rfa368a86665840048477031000b8157f']}",
+            "tip": "@{outputs('Get_response_details')?['body/r3528d6a6e59140e1872a6ab21ad66661']}",
+            "data_necesara": "@{outputs('Get_response_details')?['body/r1d5c613a38a84092a3708068663b5b9a']}",
+            "recurenta": "@{outputs('Get_response_details')?['body/rcf06a3597fda4ab0bc36ba3d1af97f89']}",
+            "urgenta": "@{outputs('Get_response_details')?['body/rc1257700d1154213aad3f7c5ac3170f2']}",
+            "justificare": "@{outputs('Get_response_details')?['body/rcb0227918b774db19ff9b4522bfced7d']}"
+          },
+          "runAfter": {
+            "Get_response_details": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Cerere": {
+          "type": "Compose",
+          "inputs": {
+            "titlu": "@{trim(outputs('Date_Formular')?['titlu'])}",
+            "cc": "@{first(split(outputs('Date_Formular')?['centru_cost'], ' '))}",
+            "cat": "@{first(split(outputs('Date_Formular')?['categorie'], ' '))}",
+            "cui": "@{trim(outputs('Date_Formular')?['cui'])}",
+            "valoare": "@{replace(trim(outputs('Date_Formular')?['valoare']), ',', '.')}",
+            "moneda": "@{outputs('Date_Formular')?['moneda']}",
+            "tip": "@{outputs('Date_Formular')?['tip']}",
+            "data_necesara": "@{formatDateTime(outputs('Date_Formular')?['data_necesara'], 'yyyy-MM-dd')}",
+            "luna_buget": "@{formatDateTime(outputs('Date_Formular')?['data_necesara'], 'yyyy-MM')}",
+            "cheie_buget": "@{concat(formatDateTime(outputs('Date_Formular')?['data_necesara'], 'yyyy-MM'), '_', first(split(outputs('Date_Formular')?['centru_cost'], ' ')), '_', first(split(outputs('Date_Formular')?['categorie'], ' ')))}",
+            "recurenta": "@{if(equals(outputs('Date_Formular')?['recurenta'], 'Da'), 'true', 'false')}",
+            "urgenta": "@{if(empty(outputs('Date_Formular')?['urgenta']), '0', outputs('Date_Formular')?['urgenta'])}",
+            "justificare": "@{trim(outputs('Date_Formular')?['justificare'])}",
+            "email": "@{outputs('Get_response_details')?['body/responder']}"
+          },
+          "runAfter": {
+            "Date_Formular": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Get_Config": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+              "table": "f299f234-df48-4098-a8da-11ad896a9ed5"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runAfter": {
+            "Cerere": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Select_Config": {
+          "type": "Select",
+          "inputs": {
+            "from": "@outputs('Get_Config')?['body/value']",
+            "select": "@ concat('\"', item()?['Title'], '\":\"', item()?['Valoare'], '\"')"
+          },
+          "runAfter": {
+            "Get_Config": [
+              "Succeeded"
+            ]
+          }
+        },
+        "cfg": {
+          "type": "Compose",
+          "inputs": "@json(concat('{', join(body('Select_Config'), ','), '}'))",
+          "runAfter": {
+            "Select_Config": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varErori": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varErori",
+                "type": "array",
+                "value": []
+              }
+            ]
+          },
+          "runAfter": {
+            "cfg": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varAvert": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varAvert",
+                "type": "array",
+                "value": []
+              }
+            ]
+          },
+          "runAfter": {
+            "varErori": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varIdCerere": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varIdCerere",
+                "type": "string"
+              }
+            ]
+          },
+          "runAfter": {
+            "varAvert": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varCurs": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varCurs",
+                "type": "float",
+                "value": 1
+              }
+            ]
+          },
+          "runAfter": {
+            "varIdCerere": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varDataCurs": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varDataCurs",
+                "type": "string"
+              }
+            ]
+          },
+          "runAfter": {
+            "varCurs": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varRespins": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varRespins",
+                "type": "boolean",
+                "value": false
+              }
+            ]
+          },
+          "runAfter": {
+            "varDataCurs": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varIdx": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varIdx",
+                "type": "integer",
+                "value": 0
+              }
+            ]
+          },
+          "runAfter": {
+            "varRespins": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varAprobatori": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varAprobatori",
+                "type": "array",
+                "value": []
+              }
+            ]
+          },
+          "runAfter": {
+            "varIdx": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Create_Cerere": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+              "table": "e9f4ad2f-dacc-46ca-a60e-7333277cfdf4",
+              "item/Title": "TEMP",
+              "item/TitluCerere": "@outputs('Cerere')?['titlu']",
+              "item/CentruCost": "@outputs('Cerere')?['cc']",
+              "item/Categorie": "@outputs('Cerere')?['cat']",
+              "item/Luna_Buget": "@outputs('Cerere')?['luna_buget']",
+              "item/CUI": "@outputs('Cerere')?['cui']",
+              "item/Platitor_TVA": false,
+              "item/Valoare": "@float(outputs('Cerere')?['valoare'])",
+              "item/Moneda/Value": "@outputs('Cerere')?['moneda']",
+              "item/Tip/Value": "@outputs('Cerere')?['tip']",
+              "item/Data_Necesara": "@outputs('Cerere')?['data_necesara']",
+              "item/Recurenta": "@equals(outputs('Cerere')?['recurenta'], 'true')",
+              "item/Urgenta": "@int(outputs('Cerere')?['urgenta'])",
+              "item/Justificare": "@outputs('Cerere')?['justificare']",
+              "item/Peste_Buget": false,
+              "item/Status/Value": "Nouă",
+              "item/Solicitant_Email": "@outputs('Cerere')?['email']",
+              "item/Data_Cerere": "@utcNow()"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "PostItem",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runAfter": {
+            "varMotiv": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Set_varIdCerere": {
+          "type": "SetVariable",
+          "inputs": {
+            "name": "varIdCerere",
+            "value": "@concat('PR-', formatDateTime(utcNow(), 'yyyy'), '-', formatNumber(outputs('Create_Cerere')?['body/ID'], '0000'))"
+          },
+          "runAfter": {
+            "Create_Cerere": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Set_ID_Cerere": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+              "table": "e9f4ad2f-dacc-46ca-a60e-7333277cfdf4",
+              "id": "@outputs('Create_Cerere')?['body/ID']",
+              "item/Title": "@variables('varIdCerere')"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "PatchItem",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runAfter": {
+            "Set_varIdCerere": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Log_Noua": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+              "table": "ed8c277f-09a0-4732-b257-398199e56f8f",
+              "item/Title": "@variables('varIdCerere')",
+              "item/Flux/Value": "F1",
+              "item/Stare_Veche": "—",
+              "item/Stare_Noua": "Nouă",
+              "item/Actor": "@outputs('Cerere')?['email']",
+              "item/Data_Ora": "@utcNow()",
+              "item/Comentariu": "Cerere înregistrată din formular."
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "PostItem",
+              "connectionName": "shared_sharepointonline"
+            }
+          },
+          "runAfter": {
+            "Set_ID_Cerere": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Scope_Validare": {
+          "type": "Scope",
+          "actions": {
+            "HTTP_ANAF": {
+              "type": "Http",
+              "inputs": {
+                "uri": "https://webservicesp.anaf.ro/api/PlatitorTvaRest/v9/tva",
+                "method": "POST",
+                "headers": {
+                  "Content-Type": "application/json"
+                },
+                "body": [
+                  {
+                    "cui": "@int(outputs('Cerere')?['cui'])",
+                    "data": "@{formatDateTime(utcNow(), 'yyyy-MM-dd')}"
+                  }
+                ],
+                "retryPolicy": {
+                  "type": "exponential",
+                  "count": 3,
+                  "interval": "PT10S"
+                }
+              },
+              "limit": {
+                "timeout": "PT1M"
+              },
+              "runtimeConfiguration": {
+                "contentTransfer": {
+                  "transferMode": "Chunked"
+                }
+              }
+            },
+            "Parse_ANAF": {
+              "type": "ParseJson",
+              "inputs": {
+                "content": "@body('HTTP_ANAF')",
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "found": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date_generale": {
+                            "type": "object",
+                            "properties": {
+                              "cui": {
+                                "type": "integer"
+                              },
+                              "denumire": {
+                                "type": "string"
+                              },
+                              "adresa": {
+                                "type": "string"
+                              },
+                              "data": {
+                                "type": "string"
+                              },
+                              "stare_inregistrare": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "inregistrare_scop_Tva": {
+                            "type": "object",
+                            "properties": {
+                              "scpTVA": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          "stare_inactiv": {
+                            "type": "object",
+                            "properties": {
+                              "dataInactivare": {
+                                "type": "string"
+                              },
+                              "dataRadiere": {
+                                "type": "string"
+                              },
+                              "statusInactivi": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "notFound": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "HTTP_ANAF": [
+                  "Succeeded",
+                  "Failed"
+                ]
+              }
+            },
+            "Firma": {
+              "type": "Compose",
+              "inputs": "@first(body('Parse_ANAF')?['found'])",
+              "runAfter": {
+                "Parse_ANAF": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Denumire": {
+              "type": "Compose",
+              "inputs": "@coalesce(outputs('Firma')?['date_generale']?['denumire'], '')",
+              "runAfter": {
+                "Firma": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "CUI_inexistent": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@empty(outputs('Firma'))",
+                      "@true"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Append_to_array_variable": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "varErori",
+                    "value": "@concat('[V1] CUI ', outputs('Cerere')?['cui'], ' nu figurează în baza ANAF.')"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "Denumire": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Firma_inactiva": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@equals(outputs('Firma')?['stare_inactiv']?['statusInactivi'], true)",
+                      "@true"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Append_to_array_variable_1": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "varErori",
+                    "value": "@concat('[V2] Furnizorul ', outputs('Denumire'), ' (CUI ', outputs('Cerere')?['cui'], ') este declarat inactiv fiscal.')"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "CUI_inexistent": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Firma_radiata": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@and(not(empty(outputs('Firma'))), not(empty(outputs('Firma')?['stare_inactiv']?['dataRadiere'])))",
+                      "@true"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Append_to_array_variable_2": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "varErori",
+                    "value": "@concat('[V2b] Furnizorul ', outputs('Denumire'), ' (CUI ', outputs('Cerere')?['cui'], ') este radiat din data de ', outputs('Firma')?['stare_inactiv']?['dataRadiere'], '.')"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "Firma_inactiva": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Neplatitor_TVA": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@equals(outputs('Firma')?['inregistrare_scop_Tva']?['scpTVA'], false)",
+                      "@true\r\n"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Append_to_array_variable_3": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "varAvert",
+                    "value": "@concat('[W3] Furnizorul ', outputs('Denumire'), ' nu este înregistrat în scopuri de TVA.')"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "Firma_radiata": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Cond_Moneda": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@equals(outputs('Cerere')?['moneda'], 'RON')",
+                      "@false"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "HTTP_BNR": {
+                  "type": "Http",
+                  "inputs": {
+                    "uri": "https://curs.bnr.ro/nbrfxrates.xml",
+                    "method": "GET",
+                    "retryPolicy": {
+                      "type": "exponential",
+                      "count": 3,
+                      "interval": "PT10S"
+                    }
+                  },
+                  "limit": {
+                    "timeout": "PT1M"
+                  },
+                  "runtimeConfiguration": {
+                    "contentTransfer": {
+                      "transferMode": "Chunked"
+                    }
+                  }
+                },
+                "BNR_OK": {
+                  "type": "If",
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@equals(actions('HTTP_BNR')?['status'], 'Succeeded')",
+                          "@true\r\n"
+                        ]
+                      }
+                    ]
+                  },
+                  "actions": {
+                    "Set_variable": {
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "varCurs",
+                        "value": "@float(xpath(xml(body('HTTP_BNR')), concat('string(//*[local-name()=''Rate''][@currency=''', outputs('Cerere')?['moneda'], '''])')))"
+                      }
+                    },
+                    "Set_variable_1": {
+                      "type": "SetVariable",
+                      "inputs": {
+                        "name": "varDataCurs",
+                        "value": "@xpath(xml(body('HTTP_BNR')), 'string(//*[local-name()=''Cube'']/@date)')"
+                      },
+                      "runAfter": {
+                        "Set_variable": [
+                          "Succeeded"
+                        ]
+                      }
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Set_variable_2": {
+                        "type": "SetVariable",
+                        "inputs": {
+                          "name": "varCurs",
+                          "value": "@float(outputs('cfg')?[concat('curs_fallback_', outputs('Cerere')?['moneda'])])"
+                        }
+                      },
+                      "Set_variable_3": {
+                        "type": "SetVariable",
+                        "inputs": {
+                          "name": "varDataCurs",
+                          "value": "rezervă Config"
+                        },
+                        "runAfter": {
+                          "Set_variable_2": [
+                            "Succeeded"
+                          ]
+                        }
+                      },
+                      "Append_to_array_variable_4": {
+                        "type": "AppendToArrayVariable",
+                        "inputs": {
+                          "name": "varAvert",
+                          "value": "@concat('[W4] Cursul BNR nu a putut fi obținut; s-a folosit cursul de rezervă din Config (1 ', outputs('Cerere')?['moneda'], ' = ', string(variables('varCurs')), ' RON).')"
+                        },
+                        "runAfter": {
+                          "Set_variable_3": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "runAfter": {
+                    "HTTP_BNR": [
+                      "Succeeded",
+                      "Failed",
+                      "TimedOut"
+                    ]
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "Neplatitor_TVA": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Valoare_in_afara_plafonului": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@or(lessOrEquals(outputs('Valoare_RON'), 0), greater(outputs('Valoare_RON'), float(outputs('cfg')?['valoare_max_ron'])))",
+                      "@true\r\n"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Append_to_array_variable_5": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "varErori",
+                    "value": "@concat('[V3] Valoarea de ', formatNumber(outputs('Valoare_RON'), 'N2', 'ro-RO'), ' RON este în afara intervalului acceptat: peste 0 și cel mult ', formatNumber(float(outputs('cfg')?['valoare_max_ron']), 'N0', 'ro-RO'), ' RON.')"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "Valoare_RON": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Valoare_RON": {
+              "type": "Compose",
+              "inputs": "@float(formatNumber(mul(float(outputs('Cerere')?['valoare']), variables('varCurs')), '0.00', 'en-US'))",
+              "runAfter": {
+                "Cond_Moneda": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Data_prea_apropiata": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@less(ticks(outputs('Cerere')?['data_necesara']), ticks(formatDateTime(addDays(utcNow(), int(outputs('cfg')?['zile_min_avans'])), 'yyyy-MM-dd')))",
+                      "@true\r\n"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Append_to_array_variable_6": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "varErori",
+                    "value": "@concat('[V4] Data necesară ', formatDateTime(outputs('Cerere')?['data_necesara'], 'dd.MM.yyyy'), ' este prea apropiată. Data minimă acceptată este ', formatDateTime(addDays(utcNow(), int(outputs('cfg')?['zile_min_avans'])), 'dd.MM.yyyy'), ' (', outputs('cfg')?['zile_min_avans'], ' zile de la depunere).')"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "Valoare_in_afara_plafonului": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Get_Buget": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                  "table": "dff40545-aba0-4852-8949-dfa51b094819",
+                  "$filter": "Title eq '@{outputs('Cerere')?['cheie_buget']}'",
+                  "$top": 1
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetItems",
+                  "connectionName": "shared_sharepointonline"
+                }
+              },
+              "runAfter": {
+                "Data_prea_apropiata": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Buget": {
+              "type": "Compose",
+              "inputs": "@first(outputs('Get_Buget')?['body/value'])",
+              "runAfter": {
+                "Get_Buget": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Peste_Buget": {
+              "type": "Compose",
+              "inputs": "@greater(outputs('Valoare_RON'), coalesce(outputs('Buget')?['Ramas_RON'], 1000000000))",
+              "runAfter": {
+                "Buget": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Fara_buget": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@empty(outputs('Buget'))",
+                      "@true"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Append_to_array_variable_7": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "varErori",
+                    "value": "@concat('[V5] Nu există buget pentru ', outputs('Cerere')?['cc'], '/', outputs('Cerere')?['cat'], ' în ', outputs('Cerere')?['luna_buget'], '.')"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "Peste_Buget": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Peste_bugetCondition": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@outputs('Peste_Buget')",
+                      "@true"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Append_to_array_variable_8": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "varAvert",
+                    "value": "@concat('[W1] Valoarea de ', formatNumber(outputs('Valoare_RON'), 'N2', 'ro-RO'), ' RON depășește bugetul rămas de ', formatNumber(outputs('Buget')?['Ramas_RON'], 'N2', 'ro-RO'), ' RON pentru ', outputs('Cerere')?['cheie_buget'], '. Se solicită și aprobarea CFO.')"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "Fara_buget": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "OPEX": {
+              "type": "If",
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@and(equals(outputs('Cerere')?['cat'], 'HW'), equals(outputs('Cerere')?['tip'], 'OPEX'), greaterOrEquals(outputs('Valoare_RON'), float(outputs('cfg')?['prag_capex_ron'])))",
+                      "@true"
+                    ]
+                  }
+                ]
+              },
+              "actions": {
+                "Append_to_array_variable_9": {
+                  "type": "AppendToArrayVariable",
+                  "inputs": {
+                    "name": "varAvert",
+                    "value": "@concat('[W2] Hardware de ', formatNumber(outputs('Valoare_RON'), 'N2', 'ro-RO'), ' RON încadrat ca OPEX (prag ', outputs('cfg')?['prag_capex_ron'], ' RON): posibilă imobilizare — verificați încadrarea CAPEX.')"
+                  }
+                }
+              },
+              "else": {
+                "actions": {}
+              },
+              "runAfter": {
+                "Peste_bugetCondition": [
+                  "Succeeded"
+                ]
+              }
+            }
+          },
+          "runAfter": {
+            "Log_Noua": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Cond_Erori": {
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@greater(length(variables('varErori')), 0)",
+                  "@true"
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Upd_Respinsa": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                  "table": "e9f4ad2f-dacc-46ca-a60e-7333277cfdf4",
+                  "id": "@outputs('Create_Cerere')?['body/ID']",
+                  "item/Title": "@variables('varIdCerere')",
+                  "item/Furnizor_ANAF": "@outputs('Denumire')",
+                  "item/Curs_BNR": "@variables('varCurs')",
+                  "item/Valoare_RON": "@outputs('Valoare_RON')",
+                  "item/Avertismente": "@join(variables('varAvert'), decodeUriComponent('%0A'))",
+                  "item/Status/Value": "Respinsă",
+                  "item/Motiv_Respingere": "@join(variables('varErori'), decodeUriComponent('%0A'))",
+                  "item/Data_Finalizare": "@utcNow()"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "PatchItem",
+                  "connectionName": "shared_sharepointonline"
+                }
+              }
+            },
+            "Log_Respinsa": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                  "table": "ed8c277f-09a0-4732-b257-398199e56f8f",
+                  "item/Title": "@variables('varIdCerere')",
+                  "item/Flux/Value": "F1",
+                  "item/Stare_Veche": "Nouă",
+                  "item/Stare_Noua": "Respinsă",
+                  "item/Actor": "BudgetGuard (validare automată)",
+                  "item/Data_Ora": "@utcNow()",
+                  "item/Comentariu": "@join(variables('varErori'), '; ')"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "PostItem",
+                  "connectionName": "shared_sharepointonline"
+                }
+              },
+              "runAfter": {
+                "Upd_Respinsa": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Html_Respinsa": {
+              "type": "Compose",
+              "inputs": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#222;max-width:640px\">\n  <div style=\"background:#b42318;color:#fff;padding:12px 16px;font-size:16px;font-weight:600\">\n    BudgetGuard · Cerere respinsă la validare\n  </div>\n  <div style=\"padding:16px;border:1px solid #ddd;border-top:none\">\n    <p>Bună ziua,</p>\n    <p>Cererea <b>@{variables('varIdCerere')}</b> – „@{outputs('Cerere')?['titlu']}” nu a trecut validarea automată și a fost <b>respinsă</b>.</p>\n    <p style=\"margin-bottom:4px\"><b>Motive:</b></p>\n    <ul style=\"margin-top:0;color:#b42318\"><li>@{join(variables('varErori'), '</li><li>')}</li></ul>\n    <table style=\"border-collapse:collapse;font-size:13px\">\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Centru de cost / categorie</td><td>@{outputs('Cerere')?['cc']} / @{outputs('Cerere')?['cat']}</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">CUI furnizor</td><td>@{outputs('Cerere')?['cui']} @{outputs('Denumire')}</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Valoare</td><td>@{outputs('Cerere')?['valoare']} @{outputs('Cerere')?['moneda']}</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Data necesară</td><td>@{formatDateTime(outputs('Cerere')?['data_necesara'], 'dd.MM.yyyy')}</td></tr>\n    </table>\n    <p>Poți corecta datele și trimite o cerere nouă din formular.</p>\n    <p style=\"font-size:12px;color:#888\">Mesaj automat BudgetGuard · Vestra Retail SRL · @{convertTimeZone(utcNow(), 'UTC', 'GTB Standard Time', 'dd.MM.yyyy HH:mm')}</p>\n  </div>\n</div>\n",
+              "runAfter": {
+                "Log_Respinsa": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Html_Teams_Respinsa": {
+              "type": "Compose",
+              "inputs": "<p>🔴 <b>@{variables('varIdCerere')}</b> – @{outputs('Cerere')?['titlu']}</p>\n<p>Nouă → <b>Respinsă</b> (validare automată) · @{outputs('Cerere')?['cc']}/@{outputs('Cerere')?['cat']} · @{outputs('Cerere')?['valoare']} @{outputs('Cerere')?['moneda']}</p>\n<p>@{join(variables('varErori'), '<br>')}</p>\n<p><a href=\"@{outputs('Create_Cerere')?['body/{Link}']}\">Deschide cererea în SharePoint</a></p>",
+              "runAfter": {
+                "Email_Respinsa": [
+                  "Succeeded",
+                  "Failed"
+                ]
+              }
+            },
+            "Teams_Respinsa": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "poster": "Flow bot",
+                  "location": "Channel",
+                  "body/recipient/groupId": "@outputs('cfg')?['teams_team_id']",
+                  "body/recipient/channelId": "@outputs('cfg')?['teams_channel_id']",
+                  "body/messageBody": "<p class=\"editor-paragraph\">@{outputs('Html_Teams_Respinsa')}</p>"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+                  "operationId": "PostMessageToConversation",
+                  "connectionName": "shared_teams"
+                }
+              },
+              "runAfter": {
+                "Html_Teams_Respinsa": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Terminate_Respinsa": {
+              "type": "Terminate",
+              "inputs": {
+                "runStatus": "Succeeded"
+              },
+              "runAfter": {
+                "Teams_Respinsa": [
+                  "Succeeded"
+                ]
+              }
+            },
+            "Email_Respinsa": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "emailMessage/To": "@outputs('Cerere')?['email']",
+                  "emailMessage/Subject": "[BudgetGuard] @{variables('varIdCerere')} – cerere respinsă la validare",
+                  "emailMessage/Body": "<p class=\"editor-paragraph\">@{outputs('Html_Respinsa')}</p>"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_gmail",
+                  "operationId": "SendEmailV2",
+                  "connectionName": "shared_gmail"
+                }
+              },
+              "runAfter": {
+                "Html_Respinsa": [
+                  "Succeeded"
+                ]
+              }
+            }
+          },
+          "else": {
+            "actions": {
+              "Upd_In_Aprobare": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                    "table": "e9f4ad2f-dacc-46ca-a60e-7333277cfdf4",
+                    "id": "@outputs('Create_Cerere')?['body/ID']",
+                    "item/Title": "@variables('varIdCerere')",
+                    "item/Furnizor_ANAF": "@outputs('Denumire')",
+                    "item/Platitor_TVA": "@equals(outputs('Firma')?['inregistrare_scop_Tva']?['scpTVA'], true)",
+                    "item/Curs_BNR": "@variables('varCurs')",
+                    "item/Valoare_RON": "@outputs('Valoare_RON')",
+                    "item/Peste_Buget": "@outputs('Peste_Buget')",
+                    "item/Avertismente": "@join(variables('varAvert'), decodeUriComponent('%0A'))",
+                    "item/Status/Value": "În aprobare"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "PatchItem",
+                    "connectionName": "shared_sharepointonline"
+                  }
+                }
+              },
+              "Log_In_Aprobare": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                    "table": "ed8c277f-09a0-4732-b257-398199e56f8f",
+                    "item/Title": "@variables('varIdCerere')",
+                    "item/Flux/Value": "F1",
+                    "item/Stare_Veche": "Nouă",
+                    "item/Stare_Noua": "În aprobare",
+                    "item/Actor": " BudgetGuard (validare automată)",
+                    "item/Data_Ora": "@utcNow()",
+                    "item/Comentariu": "@concat('Validare OK. Valoare_RON ', string(outputs('Valoare_RON')), if(equals(outputs('Cerere')?['moneda'], 'RON'), '', concat(' (curs BNR ', outputs('Cerere')?['moneda'], ' ', string(variables('varCurs')), ' din ', variables('varDataCurs'), ')')), '. Avertismente: ', string(length(variables('varAvert'))), '.')"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "PostItem",
+                    "connectionName": "shared_sharepointonline"
+                  }
+                },
+                "runAfter": {
+                  "Upd_In_Aprobare": [
+                    "Succeeded"
+                  ]
+                }
+              },
+              "_Html_In_Aprobare": {
+                "type": "Compose",
+                "inputs": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#222;max-width:640px\">\n  <div style=\"background:#1d4ed8;color:#fff;padding:12px 16px;font-size:16px;font-weight:600\">\n    BudgetGuard · Cerere înregistrată – în aprobare\n  </div>\n  <div style=\"padding:16px;border:1px solid #ddd;border-top:none\">\n    <p>Bună ziua,</p>\n    <p>Cererea <b>@{variables('varIdCerere')}</b> – „@{outputs('Cerere')?['titlu']}” a trecut validarea automată și a intrat în <b>circuitul de aprobare</b>.</p>\n    <table style=\"border-collapse:collapse;font-size:13px\">\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Furnizor (ANAF)</td><td>@{outputs('Denumire')} · CUI @{outputs('Cerere')?['cui']}</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Valoare</td><td>@{outputs('Cerere')?['valoare']} @{outputs('Cerere')?['moneda']} × curs @{variables('varCurs')} = <b>@{formatNumber(outputs('Valoare_RON'), 'N2', 'ro-RO')} RON</b></td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Buget @{outputs('Cerere')?['cheie_buget']}</td><td>rămas @{formatNumber(outputs('Buget')?['Ramas_RON'], 'N2', 'ro-RO')} RON din @{formatNumber(outputs('Buget')?['Buget_RON'], 'N2', 'ro-RO')} RON</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Tip / data necesară</td><td>@{outputs('Cerere')?['tip']} · @{formatDateTime(outputs('Cerere')?['data_necesara'], 'dd.MM.yyyy')}</td></tr>\n    </table>\n    <p style=\"margin-bottom:4px\"><b>Avertismente:</b></p>\n    @{if(empty(variables('varAvert')), '<p style=\"margin-top:0;color:#15803d\">Niciun avertisment.</p>', concat('<ul style=\"margin-top:0;color:#b45309\"><li>', join(variables('varAvert'), '</li><li>'), '</li></ul>'))}\n    <p>Vei primi un email la fiecare decizie a aprobatorilor.</p>\n    <p style=\"font-size:12px;color:#888\">Mesaj automat BudgetGuard · Vestra Retail SRL · @{convertTimeZone(utcNow(), 'UTC', 'GTB Standard Time', 'dd.MM.yyyy HH:mm')}</p>\n  </div>\n</div>\n",
+                "runAfter": {
+                  "Log_In_Aprobare": [
+                    "Succeeded"
+                  ]
+                }
+              },
+              "_Email_In_Aprobare": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "emailMessage/To": "@outputs('Cerere')?['email']",
+                    "emailMessage/Subject": " [BudgetGuard] @{variables('varIdCerere')} – în aprobare",
+                    "emailMessage/Body": "<p class=\"editor-paragraph\">@{outputs('_Html_In_Aprobare')}</p>"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_gmail",
+                    "operationId": "SendEmailV2",
+                    "connectionName": "shared_gmail"
+                  }
+                },
+                "runAfter": {
+                  "_Html_In_Aprobare": [
+                    "Succeeded"
+                  ]
+                }
+              },
+              "_Html_Teams_In_Aprobare": {
+                "type": "Compose",
+                "inputs": "<p>🟡 <b>@{variables('varIdCerere')}</b> – @{outputs('Cerere')?['titlu']}</p>\n<p>Nouă → <b>În aprobare</b> · @{outputs('Cerere')?['cc']}/@{outputs('Cerere')?['cat']} · @{formatNumber(outputs('Valoare_RON'), 'N2', 'ro-RO')} RON@{if(outputs('Peste_Buget'), ' · ⚠️ peste buget', '')}</p>\n<p><a href=\"@{outputs('Create_Cerere')?['body/{Link}']}\">Deschide cererea în SharePoint</a></p>",
+                "runAfter": {
+                  "_Email_In_Aprobare": [
+                    "Succeeded"
+                  ]
+                }
+              },
+              "Teams_In_Aprobare": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "poster": "Flow bot",
+                    "location": "Channel",
+                    "body/recipient/groupId": "@ outputs('cfg')?['teams_team_id']",
+                    "body/recipient/channelId": "@outputs('cfg')?['teams_channel_id']",
+                    "body/messageBody": "<p class=\"editor-paragraph\">@{outputs('_Html_Teams_In_Aprobare')}</p>"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+                    "operationId": "PostMessageToConversation",
+                    "connectionName": "shared_teams"
+                  }
+                },
+                "runAfter": {
+                  "_Html_Teams_In_Aprobare": [
+                    "Succeeded"
+                  ]
+                }
+              },
+              "Necesita_CFO": {
+                "type": "Compose",
+                "inputs": "@or(outputs('Peste_Buget'), greater(outputs('Valoare_RON'), float(outputs('cfg')?['prag_cfo_ron'])))",
+                "runAfter": {
+                  "Teams_In_Aprobare": [
+                    "Succeeded"
+                  ]
+                }
+              },
+              "Set_varAprobatori": {
+                "type": "SetVariable",
+                "inputs": {
+                  "name": "varAprobatori",
+                  "value": "@if(equals(outputs('cfg')?['mod_demo'], 'true'), createArray(outputs('cfg')?['email_bcc']), if(outputs('Necesita_CFO'), createArray(outputs('cfg')?['aprobator_1'], outputs('cfg')?['aprobator_2'], outputs('cfg')?['aprobator_3'], outputs('cfg')?['aprobator_cfo']), createArray(outputs('cfg')?['aprobator_1'], outputs('cfg')?['aprobator_2'], outputs('cfg')?['aprobator_3'])))"
+                },
+                "runAfter": {
+                  "Necesita_CFO": [
+                    "Succeeded"
+                  ]
+                }
+              },
+              "Roluri": {
+                "type": "Compose",
+                "inputs": "@if(equals(outputs('cfg')?['mod_demo'], 'true'), createArray('Aprobator unic (demo)'), createArray('Manager centru de cost', 'Controlling', 'Director financiar', 'CFO'))",
+                "runAfter": {
+                  "Set_varAprobatori": [
+                    "Succeeded"
+                  ]
+                }
+              },
+              "Do_until_Aprobare": {
+                "type": "Until",
+                "expression": "@equals(or(variables('varRespins'), greaterOrEquals(variables('varIdx'), length(variables('varAprobatori')))),true)",
+                "limit": {
+                  "count": 10,
+                  "timeout": "P30D"
+                },
+                "actions": {
+                  "Aprobare": {
+                    "type": "OpenApiConnectionWebhook",
+                    "inputs": {
+                      "parameters": {
+                        "approvalType": "Basic",
+                        "WebhookApprovalCreationInput/title": "@{variables('varIdCerere')} · aprobare @{add(variables('varIdx'), 1)}/@{length(variables('varAprobatori'))} · @{outputs('Cerere')?['titlu']}",
+                        "WebhookApprovalCreationInput/assignedTo": "@variables('varAprobatori')[variables('varIdx')]",
+                        "WebhookApprovalCreationInput/details": "**Pas @{add(variables('varIdx'), 1)} din @{length(variables('varAprobatori'))}: @{outputs('Roluri')[variables('varIdx')]}**",
+                        "WebhookApprovalCreationInput/itemLink": "@outputs('Create_Cerere')?['body/{Link}']",
+                        "WebhookApprovalCreationInput/itemLinkDescription": "Deschide cererea în SharePoint",
+                        "WebhookApprovalCreationInput/enableNotifications": true,
+                        "WebhookApprovalCreationInput/enableReassignment": true
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_approvals",
+                        "operationId": "StartAndWaitForAnApproval",
+                        "connectionName": "shared_approvals-1"
+                      }
+                    },
+                    "limit": {
+                      "timeout": "P7D"
+                    }
+                  },
+                  "Decizie": {
+                    "type": "Compose",
+                    "inputs": {
+                      "pas": "@{add(variables('varIdx'), 1)}/@{length(variables('varAprobatori'))}",
+                      "rol": "@{outputs('Roluri')[variables('varIdx')]}",
+                      "rezultat": "@{if(equals(actions('Aprobare')?['outputs']?['body']?['outcome'], 'Approve'), 'Aprobat', if(equals(actions('Aprobare')?['status'], 'TimedOut'), 'Expirat', 'Respins'))}",
+                      "aprobator": "@{coalesce(actions('Aprobare')?['outputs']?['body']?['responses']?[0]?['responder']?['email'], variables('varAprobatori')[variables('varIdx')])}",
+                      "comentariu": "@{coalesce(actions('Aprobare')?['outputs']?['body']?['responses']?[0]?['comments'], '')}",
+                      "data": "@{convertTimeZone(utcNow(), 'UTC', 'GTB Standard Time', 'dd.MM.yyyy HH:mm')}"
+                    },
+                    "runAfter": {
+                      "Aprobare": [
+                        "Succeeded",
+                        "Failed"
+                      ]
+                    }
+                  },
+                  "Append_Jurnal": {
+                    "type": "AppendToStringVariable",
+                    "inputs": {
+                      "name": "varJurnal",
+                      "value": "@concat('- Pas ', outputs('Decizie')?['pas'], ' (', outputs('Decizie')?['rol'], '): ', outputs('Decizie')?['rezultat'], ' – ', outputs('Decizie')?['aprobator'], ' – ', outputs('Decizie')?['data'], if(empty(outputs('Decizie')?['comentariu']), '', concat(' – „', outputs('Decizie')?['comentariu'], '”')), decodeUriComponent('%0A'))"
+                    },
+                    "runAfter": {
+                      "Decizie": [
+                        "Succeeded"
+                      ]
+                    }
+                  },
+                  "Upd_Aprobari": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                        "table": "e9f4ad2f-dacc-46ca-a60e-7333277cfdf4",
+                        "id": "@outputs('Create_Cerere')?['body/ID']",
+                        "item/Title": "@variables('varIdCerere')",
+                        "item/Aprobari": "@variables('varJurnal')"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "PatchItem",
+                        "connectionName": "shared_sharepointonline"
+                      }
+                    },
+                    "runAfter": {
+                      "Append_Jurnal": [
+                        "Succeeded"
+                      ]
+                    }
+                  },
+                  "Log_Pas": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                        "table": "ed8c277f-09a0-4732-b257-398199e56f8f",
+                        "item/Title": "@variables('varIdCerere')",
+                        "item/Flux/Value": "F1",
+                        "item/Stare_Veche": "În aprobare",
+                        "item/Stare_Noua": "În aprobare",
+                        "item/Actor": "@outputs('Decizie')?['aprobator']",
+                        "item/Data_Ora": "@utcNow()",
+                        "item/Comentariu": "@concat('Pas ', outputs('Decizie')?['pas'], ' (', outputs('Decizie')?['rol'], '): ', outputs('Decizie')?['rezultat'], if(empty(outputs('Decizie')?['comentariu']), '.', concat(' – „', outputs('Decizie')?['comentariu'], '”')))"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "PostItem",
+                        "connectionName": "shared_sharepointonline"
+                      }
+                    },
+                    "runAfter": {
+                      "Upd_Aprobari": [
+                        "Succeeded"
+                      ]
+                    }
+                  },
+                  "Cond_Aprobat_Pas": {
+                    "type": "If",
+                    "expression": {
+                      "and": [
+                        {
+                          "equals": [
+                            "@equals(outputs('Decizie')?['rezultat'], 'Aprobat')",
+                            "@false"
+                          ]
+                        }
+                      ]
+                    },
+                    "actions": {
+                      "Set_variable_5": {
+                        "type": "SetVariable",
+                        "inputs": {
+                          "name": "varRespins",
+                          "value": true
+                        }
+                      },
+                      "Set_variable_6": {
+                        "type": "SetVariable",
+                        "inputs": {
+                          "name": "varMotiv",
+                          "value": "@if(equals(outputs('Decizie')?['rezultat'], 'Expirat'), concat('Termenul de aprobare a expirat (7 zile) la pasul ', outputs('Decizie')?['pas'], ' – ', outputs('Decizie')?['rol'], ' (', outputs('Decizie')?['aprobator'], ').'), concat('Respinsă la pasul ', outputs('Decizie')?['pas'], ' – ', outputs('Decizie')?['rol'], ' de ', outputs('Decizie')?['aprobator'], if(empty(outputs('Decizie')?['comentariu']), ' (fără comentariu).', concat(': „', outputs('Decizie')?['comentariu'], '”'))))"
+                        },
+                        "runAfter": {
+                          "Set_variable_5": [
+                            "Succeeded"
+                          ]
+                        }
+                      }
+                    },
+                    "else": {
+                      "actions": {}
+                    },
+                    "runAfter": {
+                      "Log_Pas": [
+                        "Succeeded"
+                      ]
+                    }
+                  },
+                  "Increment_varIdx": {
+                    "type": "IncrementVariable",
+                    "inputs": {
+                      "name": "varIdx",
+                      "value": 1
+                    },
+                    "runAfter": {
+                      "Cond_Aprobat_Pas": [
+                        "Succeeded"
+                      ]
+                    }
+                  }
+                },
+                "runAfter": {
+                  "Roluri": [
+                    "Succeeded"
+                  ]
+                }
+              },
+              "Cond_Respins": {
+                "type": "If",
+                "expression": {
+                  "and": [
+                    {
+                      "equals": [
+                        "@variables('varRespins')",
+                        "@true"
+                      ]
+                    }
+                  ]
+                },
+                "actions": {
+                  "Upd_Respinsa_Aprobare": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                        "table": "e9f4ad2f-dacc-46ca-a60e-7333277cfdf4",
+                        "id": "@ outputs('Create_Cerere')?['body/ID']",
+                        "item/Title": "@variables('varIdCerere')",
+                        "item/Status/Value": "Respinsă",
+                        "item/Aprobari": "@variables('varJurnal')",
+                        "item/Motiv_Respingere": "@variables('varMotiv')",
+                        "item/Data_Finalizare": "@utcNow()"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "PatchItem",
+                        "connectionName": "shared_sharepointonline"
+                      }
+                    }
+                  },
+                  "Log_Respinsa_Aprobare": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                        "table": "ed8c277f-09a0-4732-b257-398199e56f8f",
+                        "item/Title": "@variables('varIdCerere')",
+                        "item/Flux/Value": "F1",
+                        "item/Stare_Veche": "În aprobare",
+                        "item/Stare_Noua": "Respinsă",
+                        "item/Actor": "@outputs('Decizie')?['aprobator']",
+                        "item/Data_Ora": "@utcNow()",
+                        "item/Comentariu": "@variables('varMotiv')"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "PostItem",
+                        "connectionName": "shared_sharepointonline"
+                      }
+                    },
+                    "runAfter": {
+                      "Upd_Respinsa_Aprobare": [
+                        "Succeeded"
+                      ]
+                    }
+                  },
+                  "Html_Respinsa_Aprobare": {
+                    "type": "Compose",
+                    "inputs": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#222;max-width:640px\">\n  <div style=\"background:#b42318;color:#fff;padding:12px 16px;font-size:16px;font-weight:600\">\n    BudgetGuard · Cerere respinsă\n  </div>\n  <div style=\"padding:16px;border:1px solid #ddd;border-top:none\">\n    <p>Bună ziua,</p>\n    <p>Cererea <b>@{variables('varIdCerere')}</b> – „@{outputs('Cerere')?['titlu']}” a fost <b>respinsă</b> în circuitul de aprobare.</p>\n    <p style=\"margin-bottom:4px\"><b>Motiv:</b></p>\n    <p style=\"margin-top:0;color:#b42318\">@{variables('varMotiv')}</p>\n    <p style=\"margin-bottom:4px\"><b>Istoricul deciziilor:</b></p>\n    <ul style=\"margin-top:0\"><li>@{join(split(trim(replace(variables('varJurnal'), '- Pas', 'Pas')), decodeUriComponent('%0A')), '</li><li>')}</li></ul>\n    <table style=\"border-collapse:collapse;font-size:13px\">\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Centru de cost / categorie</td><td>@{outputs('Cerere')?['cc']} / @{outputs('Cerere')?['cat']}</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Valoare</td><td>@{formatNumber(outputs('Valoare_RON'), 'N2', 'ro-RO')} RON</td></tr>\n    </table>\n    <p>Bugetul nu a fost modificat. Poți depune o cerere nouă din formular.</p>\n    <p style=\"font-size:12px;color:#888\">Mesaj automat BudgetGuard · Vestra Retail SRL · @{convertTimeZone(utcNow(), 'UTC', 'GTB Standard Time', 'dd.MM.yyyy HH:mm')}</p>\n  </div>\n</div>",
+                    "runAfter": {
+                      "Log_Respinsa_Aprobare": [
+                        "Succeeded"
+                      ]
+                    }
+                  },
+                  "Email_Respinsa_Aprobare": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "emailMessage/To": "@outputs('Cerere')?['email']",
+                        "emailMessage/Subject": "[BudgetGuard] @{variables('varIdCerere')} – cerere respinsă",
+                        "emailMessage/Body": "<p class=\"editor-paragraph\">@{outputs('Html_Respinsa_Aprobare')}</p>"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_gmail",
+                        "operationId": "SendEmailV2",
+                        "connectionName": "shared_gmail"
+                      }
+                    },
+                    "runAfter": {
+                      "Html_Respinsa_Aprobare": [
+                        "Succeeded",
+                        "Failed"
+                      ]
+                    }
+                  },
+                  "Teams_Respinsa_Aprobare": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "poster": "Flow bot",
+                        "location": "Channel",
+                        "body/recipient/groupId": "@outputs('cfg')?['teams_team_id']",
+                        "body/recipient/channelId": "@outputs('cfg')?['teams_channel_id']",
+                        "body/messageBody": "<p class=\"editor-paragraph\">@{outputs('Html_Teams_Respinsa_Aprobare')}</p>"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+                        "operationId": "PostMessageToConversation",
+                        "connectionName": "shared_teams"
+                      }
+                    },
+                    "runAfter": {
+                      "Html_Teams_Respinsa_Aprobare": [
+                        "SUCCEEDED"
+                      ]
+                    }
+                  },
+                  "Terminate": {
+                    "type": "Terminate",
+                    "inputs": {
+                      "runStatus": "Succeeded"
+                    },
+                    "runAfter": {
+                      "Teams_Respinsa_Aprobare": [
+                        "Succeeded"
+                      ]
+                    }
+                  },
+                  "Html_Teams_Respinsa_Aprobare": {
+                    "type": "Compose",
+                    "inputs": "<p>🔴 <b>@{variables('varIdCerere')}</b> – @{outputs('Cerere')?['titlu']}</p>\n<p>În aprobare → <b>Respinsă</b> · @{outputs('Cerere')?['cc']}/@{outputs('Cerere')?['cat']} · @{formatNumber(outputs('Valoare_RON'), 'N2', 'ro-RO')} RON</p>\n<p>@{variables('varMotiv')}</p>\n<p><a href=\"@{outputs('Create_Cerere')?['body/{Link}']}\">Deschide cererea în SharePoint</a></p>",
+                    "runAfter": {
+                      "Email_Respinsa_Aprobare": [
+                        "Succeeded"
+                      ]
+                    }
+                  }
+                },
+                "else": {
+                  "actions": {
+                    "Upd_Aprobata": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                          "table": "e9f4ad2f-dacc-46ca-a60e-7333277cfdf4",
+                          "id": "@outputs('Create_Cerere')?['body/ID']",
+                          "item/Title": "@variables('varIdCerere')",
+                          "item/Status/Value": "Aprobată",
+                          "item/Aprobari": "@variables('varJurnal')",
+                          "item/Data_Finalizare": "@utcNow()"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "PatchItem",
+                          "connectionName": "shared_sharepointonline"
+                        }
+                      }
+                    },
+                    "Get_Buget_Curent": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                          "table": "dff40545-aba0-4852-8949-dfa51b094819",
+                          "id": "@outputs('Buget')?['ID']"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "GetItem",
+                          "connectionName": "shared_sharepointonline"
+                        }
+                      },
+                      "runAfter": {
+                        "Upd_Aprobata": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Angajat_Nou": {
+                      "type": "Compose",
+                      "inputs": "@float(formatNumber(add(float(coalesce(body('Get_Buget_Curent')?['Angajat_RON'], 0)), outputs('Valoare_RON')), '0.00', 'en-US'))",
+                      "runAfter": {
+                        "Get_Buget_Curent": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Ramas_Nou": {
+                      "type": "Compose",
+                      "inputs": "@float(formatNumber(sub(float(body('Get_Buget_Curent')?['Buget_RON']), outputs('Angajat_Nou')), '0.00', 'en-US'))",
+                      "runAfter": {
+                        "Angajat_Nou": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Upd_Buget": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                          "table": "dff40545-aba0-4852-8949-dfa51b094819",
+                          "id": "@outputs('Buget')?['ID']",
+                          "item/Title": "@body('Get_Buget_Curent')?['Title']",
+                          "item/Angajat_RON": "@ outputs('Angajat_Nou')",
+                          "item/Ramas_RON": "@outputs('Ramas_Nou')"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "PatchItem",
+                          "connectionName": "shared_sharepointonline"
+                        }
+                      },
+                      "runAfter": {
+                        "Ramas_Nou": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Log_Aprobata": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "https://asero0.sharepoint.com/sites/ucBudgetGuard",
+                          "table": "ed8c277f-09a0-4732-b257-398199e56f8f",
+                          "item/Title": "@variables('varIdCerere')",
+                          "item/Flux/Value": "F1",
+                          "item/Stare_Veche": "În aprobare",
+                          "item/Stare_Noua": "Aprobată",
+                          "item/Actor": "@outputs('Decizie')?['aprobator']",
+                          "item/Data_Ora": "@utcNow()",
+                          "item/Comentariu": "@concat('Aprobată în ', string(length(variables('varAprobatori'))), ' pași. Angajat în ', outputs('Cerere')?['cheie_buget'], ': ', formatNumber(outputs('Valoare_RON'), 'N2', 'ro-RO'), ' RON; total angajat ', formatNumber(outputs('Angajat_Nou'), 'N2', 'ro-RO'), ' RON; rămas ', formatNumber(outputs('Ramas_Nou'), 'N2', 'ro-RO'), ' RON.')"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "PostItem",
+                          "connectionName": "shared_sharepointonline"
+                        }
+                      },
+                      "runAfter": {
+                        "Upd_Buget": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Html_Aprobata": {
+                      "type": "Compose",
+                      "inputs": "<div style=\"font-family:Segoe UI,Arial,sans-serif;font-size:14px;color:#222;max-width:640px\">\n  <div style=\"background:#15803d;color:#fff;padding:12px 16px;font-size:16px;font-weight:600\">\n    BudgetGuard · Cerere aprobată\n  </div>\n  <div style=\"padding:16px;border:1px solid #ddd;border-top:none\">\n    <p>Bună ziua,</p>\n    <p>Cererea <b>@{variables('varIdCerere')}</b> – „@{outputs('Cerere')?['titlu']}” a fost <b>aprobată</b> de toți cei @{length(variables('varAprobatori'))} aprobatori, iar suma a fost angajată în buget.</p>\n    <table style=\"border-collapse:collapse;font-size:13px\">\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Furnizor</td><td>@{outputs('Denumire')} · CUI @{outputs('Cerere')?['cui']}</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Suma angajată</td><td><b>@{formatNumber(outputs('Valoare_RON'), 'N2', 'ro-RO')} RON</b></td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Buget @{outputs('Cerere')?['cheie_buget']}</td><td>@{formatNumber(float(body('Get_Buget_Curent')?['Buget_RON']), 'N2', 'ro-RO')} RON</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Total angajat</td><td>@{formatNumber(outputs('Angajat_Nou'), 'N2', 'ro-RO')} RON</td></tr>\n      <tr><td style=\"padding:4px 12px 4px 0;color:#666\">Buget rămas</td><td><b style=\"color:@{if(less(outputs('Ramas_Nou'), 0), '#b42318', '#15803d')}\">@{formatNumber(outputs('Ramas_Nou'), 'N2', 'ro-RO')} RON</b></td></tr>\n    </table>\n    <p style=\"margin-bottom:4px\"><b>Istoricul aprobărilor:</b></p>\n    <ul style=\"margin-top:0\"><li>@{join(split(trim(replace(variables('varJurnal'), '- Pas', 'Pas')), decodeUriComponent('%0A')), '</li><li>')}</li></ul>\n    <p style=\"font-size:12px;color:#888\">Mesaj automat BudgetGuard · Vestra Retail SRL · @{convertTimeZone(utcNow(), 'UTC', 'GTB Standard Time', 'dd.MM.yyyy HH:mm')}</p>\n  </div>\n</div>\n",
+                      "runAfter": {
+                        "Log_Aprobata": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Email_Aprobata": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "emailMessage/To": "@outputs('Cerere')?['email']",
+                          "emailMessage/Subject": "[BudgetGuard] @{variables('varIdCerere')} – cerere aprobată",
+                          "emailMessage/Body": "<p class=\"editor-paragraph\">@{outputs('Html_Aprobata')}</p>"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_gmail",
+                          "operationId": "SendEmailV2",
+                          "connectionName": "shared_gmail"
+                        }
+                      },
+                      "runAfter": {
+                        "Html_Aprobata": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Html_Teams_Aprobata": {
+                      "type": "Compose",
+                      "inputs": "<p>🟢 <b>@{variables('varIdCerere')}</b> – @{outputs('Cerere')?['titlu']}</p>\n<p>În aprobare → <b>Aprobată</b> · @{outputs('Cerere')?['cc']}/@{outputs('Cerere')?['cat']} · @{formatNumber(outputs('Valoare_RON'), 'N2', 'ro-RO')} RON angajați · rămas @{formatNumber(outputs('Ramas_Nou'), 'N2', 'ro-RO')} RON în @{outputs('Cerere')?['cheie_buget']}</p>\n<p><a href=\"@{outputs('Create_Cerere')?['body/{Link}']}\">Deschide cererea în SharePoint</a></p>",
+                      "runAfter": {
+                        "Email_Aprobata": [
+                          "Succeeded"
+                        ]
+                      }
+                    },
+                    "Teams_Aprobata": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "poster": "Flow bot",
+                          "location": "Channel",
+                          "body/recipient/groupId": "@outputs('cfg')?['teams_team_id']",
+                          "body/recipient/channelId": "@outputs('cfg')?['teams_channel_id']",
+                          "body/messageBody": "<p class=\"editor-paragraph\">@{outputs('Html_Teams_Aprobata')}</p>"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+                          "operationId": "PostMessageToConversation",
+                          "connectionName": "shared_teams"
+                        }
+                      },
+                      "runAfter": {
+                        "Html_Teams_Aprobata": [
+                          "Succeeded"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "runAfter": {
+                  "Do_until_Aprobare": [
+                    "Succeeded"
+                  ]
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Scope_Validare": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varJurnal": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varJurnal",
+                "type": "string"
+              }
+            ]
+          },
+          "runAfter": {
+            "varAprobatori": [
+              "Succeeded"
+            ]
+          }
+        },
+        "varMotiv": {
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varMotiv",
+                "type": "string"
+              }
+            ]
+          },
+          "runAfter": {
+            "varJurnal": [
+              "Succeeded"
+            ]
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

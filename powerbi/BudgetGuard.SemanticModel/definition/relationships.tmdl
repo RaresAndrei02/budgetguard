@@ -1,0 +1,67 @@
+relationship 8a1f8a42-f31e-4523-8d5d-8441d8056f06
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Cereri.Data_Cerere
+	toColumn: LocalDateTable_a9463946-b8c0-4aa4-9b1f-529f1ef71d3d.Date
+
+relationship 0f8605dd-16da-4c80-8513-78a10be0f3ad
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Cereri.Data_Finalizare
+	toColumn: LocalDateTable_41a612e5-c8ee-4e54-9b84-6bcb8046a025.Date
+
+relationship d1f18227-21c9-48c3-93d0-11908c50552b
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Istoric.Data_Ora
+	toColumn: LocalDateTable_e996848a-d643-4767-bdd2-cc576a3f855c.Date
+
+relationship e5eb3edc-462c-482f-94c0-41f7be0cb54e
+	joinOnDateBehavior: datePartOnly
+	fromColumn: Luni.Data
+	toColumn: LocalDateTable_04126ef2-7d64-4a4d-8c83-e743f53c9d7e.Date
+
+relationship 35c52279-2966-ee62-aaa4-895f42f3bba0
+	fromColumn: Bugete.Luna
+	toColumn: Luni.Luna
+
+relationship 3c5dc95d-90e2-d0a9-ff48-008b9c6b60c7
+	fromColumn: Realizat_Lunar.Luna
+	toColumn: Luni.Luna
+
+relationship 2333d567-e007-683d-8f09-5ba182c70318
+	fromColumn: Cereri.Luna_Buget
+	toColumn: Luni.Luna
+
+relationship 29c95b69-6524-54e0-0a92-be92790469d9
+	fromColumn: Analize.Luna
+	toColumn: Luni.Luna
+
+relationship be0d3ee6-b9d9-56cf-fafc-61d2b97a93b7
+	fromColumn: Bugete.CentruCost
+	toColumn: CC.CC
+
+relationship b795ad8f-e17d-7d85-697f-b4782a92b1cd
+	fromColumn: Realizat_Lunar.CentruCost
+	toColumn: CC.CC
+
+relationship f1757b87-217f-3cf7-77cc-e894bd2524e6
+	fromColumn: Cereri.CentruCost
+	toColumn: CC.CC
+
+relationship 6c48175c-cc06-c2b2-b096-d4e36a099ebd
+	fromColumn: Bugete.Categorie
+	toColumn: CAT.CAT
+
+relationship f054eff8-28f6-13bb-9216-8259ee00238b
+	fromColumn: Realizat_Lunar.Categorie
+	toColumn: CAT.CAT
+
+relationship dc7d9dd4-8034-46a7-d495-eef0b1fc4ba5
+	fromColumn: Cereri.Categorie
+	toColumn: CAT.CAT
+
+relationship c86049ce-e7e7-f922-a01c-6db5bb6d48d7
+	fromColumn: Cereri.'Data cerere (zi)'
+	toColumn: Calendar.Date
+
+relationship 98c3a505-fa64-4671-a4fd-24cb91af32c3
+	fromColumn: Analize.CentruCost
+	toColumn: CC.CC

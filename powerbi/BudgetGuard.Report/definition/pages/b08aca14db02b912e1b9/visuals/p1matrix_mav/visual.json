@@ -1,0 +1,133 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.3.0/schema.json",
+  "name": "p1matrix_mav",
+  "position": {
+    "x": 10,
+    "y": 440,
+    "z": 7000,
+    "height": 270,
+    "width": 420,
+    "tabOrder": 7000
+  },
+  "visual": {
+    "visualType": "pivotTable",
+    "query": {
+      "queryState": {
+        "Rows": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "CC"
+                    }
+                  },
+                  "Property": "CC"
+                }
+              },
+              "queryRef": "CC.CC",
+              "nativeQueryRef": "CC",
+              "displayName": "CC"
+            }
+          ]
+        },
+        "Columns": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "CAT"
+                    }
+                  },
+                  "Property": "CAT"
+                }
+              },
+              "queryRef": "CAT.CAT",
+              "nativeQueryRef": "CAT",
+              "displayName": "Categorie"
+            }
+          ]
+        },
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "_Masuri"
+                    }
+                  },
+                  "Property": "Maverick"
+                }
+              },
+              "queryRef": "_Masuri.Maverick",
+              "nativeQueryRef": "Maverick",
+              "displayName": "Fără cerere"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "values": [
+        {
+          "properties": {
+            "backColor": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Masuri"
+                        }
+                      },
+                      "Property": "Maverick culoare"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "selector": {
+            "data": [
+              {
+                "dataViewWildcard": {
+                  "matchingOption": 1
+                }
+              }
+            ],
+            "metadata": "_Masuri.Maverick"
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Cheltuieli fără cerere aprobată (maverick)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

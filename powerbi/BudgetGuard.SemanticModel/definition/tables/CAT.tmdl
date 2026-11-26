@@ -1,0 +1,39 @@
+table CAT
+	lineageTag: 3a5240b8-6f8d-4b86-bbad-df393bbb73b3
+
+	column CAT
+		dataType: string
+		lineageTag: 99379c2f-24b4-48b2-b972-9b25aecfc989
+		summarizeBy: none
+		sourceColumn: CAT
+
+		annotation SummarizationSetBy = Automatic
+
+	column Tip
+		dataType: string
+		lineageTag: 06a17fc7-31eb-4920-8900-825fd06fb343
+		summarizeBy: none
+		sourceColumn: Tip
+
+		annotation SummarizationSetBy = Automatic
+
+	column Denumire
+		dataType: string
+		lineageTag: 3d3401ba-0945-4571-a83a-e20f950cd36b
+		summarizeBy: none
+		sourceColumn: Denumire
+
+		annotation SummarizationSetBy = Automatic
+
+	partition CAT = m
+		mode: import
+		source =
+				let
+				    Source = Table.RenameColumns(Table.SelectRows(Nomenclator, each [Tip] = "CAT"), {{"Title", "CAT"}})
+				in
+				    Source
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

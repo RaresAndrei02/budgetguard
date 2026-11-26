@@ -1,0 +1,8 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/1.2.0/schema.json",
+  "name": "b08aca14db02b912e1b9",
+  "displayName": "Buget vs. Realizat",
+  "displayOption": "FitToPage",
+  "height": 720,
+  "width": 1280
+}

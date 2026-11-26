@@ -1,0 +1,14 @@
+expression Nomenclator =
+		let
+		    Source = SharePoint.Tables("https://asero0.sharepoint.com/sites/ucBudgetGuard", [ApiVersion = 15]),
+		    #"9cea1c8e-a07b-41b8-ad45-fd2ba36974d5" = Source{[Id="9cea1c8e-a07b-41b8-ad45-fd2ba36974d5"]}[Items],
+		    #"Renamed Columns" = Table.RenameColumns(#"9cea1c8e-a07b-41b8-ad45-fd2ba36974d5",{{"ID", "ID.1"}}),
+		    Custom1 = Table.SelectColumns(#"Renamed Columns", {"Title","Tip","Denumire"}, MissingField.UseNull)
+		in
+		    Custom1
+	lineageTag: e3049601-5c96-4c88-8342-0502a60f82df
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

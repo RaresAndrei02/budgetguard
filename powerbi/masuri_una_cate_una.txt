@@ -1,0 +1,24 @@
+Power BI Desktop: Data pane > right-click _Masuri > New measure. Paste ONE line, Enter. Repeat.
+
+Buget = SUM ( Bugete[Buget_RON] )
+Angajat = SUM ( Bugete[Angajat_RON] )
+Realizat = SUM ( Bugete[Realizat_RON] )
+Ramas = [Buget] - [Angajat]
+Varianta = [Realizat] - [Buget]
+Varianta % = DIVIDE ( [Varianta], [Buget] )
+Utilizare buget % = DIVIDE ( [Angajat], [Buget] )
+Executie buget % = DIVIDE ( [Realizat], [Buget] )
+Maverick = SUM ( Realizat_Lunar[Maverick_RON] )
+Maverick % din realizat = DIVIDE ( [Maverick], SUM ( Realizat_Lunar[Suma_RON] ) )
+Alerta = VAR _v = ABS ( [Varianta %] ) RETURN IF ( ISBLANK ( [Realizat] ) || [Realizat] = 0, BLANK (), SWITCH ( TRUE (), _v <= 0.05, "Verde", _v <= 0.10, "Galben", "Roșu" ) )
+Alerta culoare = SWITCH ( [Alerta], "Verde", "#15803d", "Galben", "#b45309", "Roșu", "#b42318", "#6b7280" )
+Analize de revizuit = CALCULATE ( COUNTROWS ( Analize ), Analize[Necesita_Revizuire] = TRUE () )
+Nr cereri = COUNTROWS ( Cereri )
+Cereri in aprobare = CALCULATE ( [Nr cereri], Cereri[Status] = "În aprobare" )
+Cereri aprobate = CALCULATE ( [Nr cereri], Cereri[Status] IN { "Aprobată", "Exportată" } )
+Cereri respinse = CALCULATE ( [Nr cereri], Cereri[Status] = "Respinsă" )
+Rata respingere = DIVIDE ( [Cereri respinse], [Cereri aprobate] + [Cereri respinse] )
+Respinse la validare = CALCULATE ( [Cereri respinse], ISBLANK ( Cereri[Aprobari] ) || Cereri[Aprobari] = "" )
+Valoare aprobata = CALCULATE ( SUM ( Cereri[Valoare_RON] ), Cereri[Status] IN { "Aprobată", "Exportată" } )
+Timp mediu aprobare (ore) = AVERAGEX ( FILTER ( Cereri, NOT ISBLANK ( Cereri[Data_Finalizare] ) && NOT ISBLANK ( Cereri[Aprobari] ) && Cereri[Aprobari] <> "" ), DATEDIFF ( Cereri[Data_Cerere], Cereri[Data_Finalizare], MINUTE ) / 60 )
+Cereri peste buget % = DIVIDE ( CALCULATE ( [Nr cereri], Cereri[Peste_Buget] = TRUE () ), [Nr cereri] )

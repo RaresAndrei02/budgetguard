@@ -1,0 +1,72 @@
+table Istoric
+	lineageTag: b1403450-d355-4e4d-838a-46adfe19d999
+
+	column Title
+		dataType: string
+		lineageTag: a234f04d-69e7-44ee-8532-7eb9e079cc62
+		summarizeBy: none
+		sourceColumn: Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column Flux
+		dataType: string
+		lineageTag: 741e6f27-d2c4-4432-9130-0f26c64bdc84
+		summarizeBy: none
+		sourceColumn: Flux
+
+		annotation SummarizationSetBy = Automatic
+
+	column Stare_Veche
+		dataType: string
+		lineageTag: 79d291a1-fb2a-4b95-a00f-69dd6b75e578
+		summarizeBy: none
+		sourceColumn: Stare_Veche
+
+		annotation SummarizationSetBy = Automatic
+
+	column Stare_Noua
+		dataType: string
+		lineageTag: 47e633e2-8e0f-44ef-aa1d-5991cd90c0a6
+		summarizeBy: none
+		sourceColumn: Stare_Noua
+
+		annotation SummarizationSetBy = Automatic
+
+	column Actor
+		dataType: string
+		lineageTag: 974b39f2-e885-47d8-9ada-9d3aa8907d60
+		summarizeBy: none
+		sourceColumn: Actor
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data_Ora
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: dd371c90-2457-4ad4-8b8e-d3e6d1af1b67
+		summarizeBy: none
+		sourceColumn: Data_Ora
+
+		variation Variation
+			isDefault
+			relationship: d1f18227-21c9-48c3-93d0-11908c50552b
+			defaultHierarchy: LocalDateTable_e996848a-d643-4767-bdd2-cc576a3f855c.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Istoric = m
+		mode: import
+		source =
+				let
+				    Source = SharePoint.Tables("https://asero0.sharepoint.com/sites/ucBudgetGuard", [ApiVersion = 15]),
+				    #"ed8c277f-09a0-4732-b257-398199e56f8f" = Source{[Id="ed8c277f-09a0-4732-b257-398199e56f8f"]}[Items],
+				    #"Renamed Columns" = Table.RenameColumns(#"ed8c277f-09a0-4732-b257-398199e56f8f",{{"ID", "ID.1"}}),
+				    Custom1 = Table.TransformColumnTypes(Table.SelectColumns(#"Renamed Columns", {"Title","Flux","Stare_Veche","Stare_Noua","Actor","Data_Ora"}, MissingField.UseNull), {{"Data_Ora", type datetime}})
+				in
+				    Custom1
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

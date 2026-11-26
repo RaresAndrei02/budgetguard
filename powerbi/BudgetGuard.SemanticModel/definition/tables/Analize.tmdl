@@ -1,0 +1,93 @@
+table Analize
+	lineageTag: 3bb6e2e1-2d76-4145-8e44-37efb6fac0b6
+
+	column Title
+		dataType: string
+		lineageTag: 2845edeb-eba7-46f9-9d50-0963be7c516c
+		summarizeBy: none
+		sourceColumn: Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column Luna
+		dataType: string
+		lineageTag: ea0d3a5b-fe37-4aab-9716-3236e8f67854
+		summarizeBy: none
+		sourceColumn: Luna
+
+		annotation SummarizationSetBy = Automatic
+
+	column CentruCost
+		dataType: string
+		lineageTag: c8a10ba9-3ae7-4f77-9e9c-41706cb9ee44
+		summarizeBy: none
+		sourceColumn: CentruCost
+
+		annotation SummarizationSetBy = Automatic
+
+	column Varianta_Pct
+		dataType: double
+		lineageTag: e5847f5b-c7eb-47e7-9579-0162de21c147
+		summarizeBy: sum
+		sourceColumn: Varianta_Pct
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Alerta_Regula
+		dataType: string
+		lineageTag: 4396cd02-eea1-4919-881c-c4a950cbd4d1
+		summarizeBy: none
+		sourceColumn: Alerta_Regula
+
+		annotation SummarizationSetBy = Automatic
+
+	column Alerta_AI
+		dataType: string
+		lineageTag: ec604dc6-d9ce-4491-9cfa-60db9f568f8a
+		summarizeBy: none
+		sourceColumn: Alerta_AI
+
+		annotation SummarizationSetBy = Automatic
+
+	column Necesita_Revizuire
+		dataType: boolean
+		formatString: """TRUE"";""TRUE"";""FALSE"""
+		lineageTag: 767ffb2e-2a7f-4920-95ba-9b5bd94fea2a
+		summarizeBy: none
+		sourceColumn: Necesita_Revizuire
+
+		annotation SummarizationSetBy = Automatic
+
+	column Status_Analiza
+		dataType: string
+		lineageTag: 103c8329-c8c7-42f9-8428-61e51236a125
+		summarizeBy: none
+		sourceColumn: Status_Analiza
+
+		annotation SummarizationSetBy = Automatic
+
+	column Comentariu_AI
+		dataType: string
+		lineageTag: 75c484fc-0cc0-4d0f-8351-308a025d777e
+		summarizeBy: none
+		sourceColumn: Comentariu_AI
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Analize = m
+		mode: import
+		source =
+				let
+				    Source = SharePoint.Tables("https://asero0.sharepoint.com/sites/ucBudgetGuard", [ApiVersion = 15]),
+				    #"01b7b9a6-234f-4d55-b0b6-a3c8f5fe70bf" = Source{[Id="01b7b9a6-234f-4d55-b0b6-a3c8f5fe70bf"]}[Items],
+				    #"Renamed Columns" = Table.RenameColumns(#"01b7b9a6-234f-4d55-b0b6-a3c8f5fe70bf",{{"ID", "ID.1"}}),
+				    Custom1 = Table.TransformColumnTypes(Table.SelectColumns(#"Renamed Columns", {"Title","Luna","CentruCost","Varianta_Pct","Alerta_Regula","Alerta_AI","Necesita_Revizuire","Status_Analiza","Comentariu_AI"}, MissingField.UseNull), {{"Varianta_Pct", type number}, {"Necesita_Revizuire", type logical}})
+				in
+				    Custom1
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

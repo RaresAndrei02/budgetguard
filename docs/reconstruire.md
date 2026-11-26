@@ -10,7 +10,7 @@
 | Soluția Power Automate (4 fluxuri + variabila de mediu) | `solution/BudgetGuard_*.zip` (ignorat de git, păstrat local / în arhivă) și versiunea despachetată în `solution/src/` |
 | Definiția listelor | `sharepoint/schema.json` → `sharepoint/provision_requests.json` |
 | Datele inițiale | `data/seed/*.csv` |
-| Datele finale din tenantul vechi | `data/export_final/` |
+| Datele finale din tenantul vechi | `data/backup/<dată>/` (local, ignorat de git) |
 | Formularul | specificația în `docs/flux1_pas_cu_pas.md` §1 |
 | Promptul AI | `ai/system_prompt.txt` |
 
@@ -36,9 +36,9 @@ Acțiunile SharePoint au adresa site-ului vechi scrisă direct. În fiecare flux
 
 ### 4. Listele SharePoint
 1. Rulezi `BG_Setup_SharePoint` (rularea 1: liste și coloane), după `docs/setup_sharepoint_pas_cu_pas.md`.
-2. Rularea 2: datele inițiale (Config, Nomenclator, Bugete, cererile istorice).
+2. Rularea 2: datele inițiale (Config, Nomenclator, Bugete, cererile istorice). **Lipești din nou** conținutul lui `sharepoint/seed_requests.json` în *Compose*-ul fluxului: versiunea din soluția exportată e cea de la primul setup, cu denumiri vechi pentru două chei Config (azi `mod_demo` și `email_bcc`).
 3. Verifici în `docs/sharepoint_schema.md` tipurile coloanelor.
-4. Opțional: datele de la final din `data/export_final/*.csv`, lipite în *Edit in grid view*, dacă vrei starea finală, nu cea inițială.
+4. Opțional: datele de la final din `data/backup/<dată>/liste/*.csv` (backup local, nu e în git), lipite în *Edit in grid view*, dacă vrei starea finală, nu cea inițială.
 
 ### 5. Config
 Completezi în lista **Config**:

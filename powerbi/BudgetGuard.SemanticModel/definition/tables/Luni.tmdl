@@ -1,0 +1,46 @@
+table Luni
+	lineageTag: 92a481b1-b062-4715-90b4-c2c03b564e87
+
+	column Luna
+		dataType: string
+		lineageTag: 6eb744ce-a976-4e91-9878-ba5b8d1f9955
+		summarizeBy: none
+		isNameInferred
+		isDataTypeInferred
+		sourceColumn: [Luna]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Luna afisata'
+		dataType: string
+		lineageTag: 54d32658-d604-4942-a9c0-f9e6c7a119d7
+		summarizeBy: none
+		isNameInferred
+		isDataTypeInferred
+		sourceColumn: [Luna afisata]
+		sortByColumn: Data
+
+		annotation SummarizationSetBy = Automatic
+
+	column Data
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 1a1bfd91-a64b-4dc8-a6e0-27f97bce2999
+		summarizeBy: none
+		isNameInferred
+		isDataTypeInferred
+		sourceColumn: [Data]
+
+		variation Variation
+			isDefault
+			relationship: e5eb3edc-462c-482f-94c0-41f7be0cb54e
+			defaultHierarchy: LocalDateTable_04126ef2-7d64-4a4d-8c83-e743f53c9d7e.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Luni = calculated
+		mode: import
+		source = DISTINCT ( SELECTCOLUMNS ( Calendar, "Luna", Calendar[Luna], "Luna afisata", Calendar[Luna afisata], "Data", DATE ( Calendar[An], Calendar[Nr luna], 1 ) ) )
+
+	annotation PBI_Id = 326371184df941ac9091e5108ae0c020
+

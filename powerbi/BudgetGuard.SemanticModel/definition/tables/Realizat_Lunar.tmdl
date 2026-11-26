@@ -1,0 +1,89 @@
+table Realizat_Lunar
+	lineageTag: 1b770f2b-3d12-4118-9dfe-2571bfef5bc2
+
+	column Title
+		dataType: string
+		lineageTag: 093e5ccd-d17c-4940-8f01-e827b96f262f
+		summarizeBy: none
+		sourceColumn: Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column Luna
+		dataType: string
+		lineageTag: 2dee2a44-cbe2-40b1-b613-c5f51565b069
+		summarizeBy: none
+		sourceColumn: Luna
+
+		annotation SummarizationSetBy = Automatic
+
+	column CentruCost
+		dataType: string
+		lineageTag: e192e08a-b71f-4fa2-b573-7a81717d8402
+		summarizeBy: none
+		sourceColumn: CentruCost
+
+		annotation SummarizationSetBy = Automatic
+
+	column Categorie
+		dataType: string
+		lineageTag: 35489a8c-4d2b-4420-81fa-f19b054e9976
+		summarizeBy: none
+		sourceColumn: Categorie
+
+		annotation SummarizationSetBy = Automatic
+
+	column Suma_RON
+		dataType: double
+		lineageTag: aa190d1b-5fa8-4204-9e15-1b5c36e386a4
+		summarizeBy: sum
+		sourceColumn: Suma_RON
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Aprobat_RON
+		dataType: double
+		lineageTag: 26705f02-37ec-44f6-9c0c-2e80ee5faa36
+		summarizeBy: sum
+		sourceColumn: Aprobat_RON
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Maverick_RON
+		dataType: double
+		lineageTag: 964290a3-7e76-447d-a819-660d790cb562
+		summarizeBy: sum
+		sourceColumn: Maverick_RON
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Nr_Documente
+		dataType: int64
+		formatString: 0
+		lineageTag: 42c5c329-11ce-4ffb-a64f-fc85290dfcf7
+		summarizeBy: sum
+		sourceColumn: Nr_Documente
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Realizat_Lunar = m
+		mode: import
+		source =
+				let
+				    Source = SharePoint.Tables("https://asero0.sharepoint.com/sites/ucBudgetGuard", [ApiVersion = 15]),
+				    #"9eda943f-6a84-406f-ad20-4a0d9e234bfc" = Source{[Id="9eda943f-6a84-406f-ad20-4a0d9e234bfc"]}[Items],
+				    #"Renamed Columns" = Table.RenameColumns(#"9eda943f-6a84-406f-ad20-4a0d9e234bfc",{{"ID", "ID.1"}}),
+				    Custom1 = Table.TransformColumnTypes(Table.SelectColumns(#"Renamed Columns", {"Title","Luna","CentruCost","Categorie","Suma_RON","Aprobat_RON","Maverick_RON","Nr_Documente"}, MissingField.UseNull), {{"Suma_RON", type number}, {"Aprobat_RON", type number}, {"Maverick_RON", type number}, {"Nr_Documente", Int64.Type}})
+				in
+				    Custom1
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

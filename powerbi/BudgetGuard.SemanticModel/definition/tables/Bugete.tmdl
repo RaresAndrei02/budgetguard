@@ -1,0 +1,90 @@
+table Bugete
+	lineageTag: fbefb0bd-431b-47bd-832c-528f95c73b8d
+
+	column Title
+		dataType: string
+		lineageTag: 0f9a0e19-9c20-4268-9705-e9f29613bce7
+		summarizeBy: none
+		sourceColumn: Title
+
+		annotation SummarizationSetBy = Automatic
+
+	column Luna
+		dataType: string
+		lineageTag: 4c2399e4-0592-4492-a063-ccc255273733
+		summarizeBy: none
+		sourceColumn: Luna
+
+		annotation SummarizationSetBy = Automatic
+
+	column CentruCost
+		dataType: string
+		lineageTag: 504843b9-6be1-4832-8046-b998c03430d4
+		summarizeBy: none
+		sourceColumn: CentruCost
+
+		annotation SummarizationSetBy = Automatic
+
+	column Categorie
+		dataType: string
+		lineageTag: 62629b21-68cc-4e5b-8b89-02a1a4a6ff43
+		summarizeBy: none
+		sourceColumn: Categorie
+
+		annotation SummarizationSetBy = Automatic
+
+	column Buget_RON
+		dataType: double
+		lineageTag: 92091109-de31-4559-a91c-25fbb4a89b35
+		summarizeBy: sum
+		sourceColumn: Buget_RON
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Angajat_RON
+		dataType: double
+		lineageTag: f963dbcb-e426-4572-b4f6-79998462c2f8
+		summarizeBy: sum
+		sourceColumn: Angajat_RON
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Realizat_RON
+		dataType: double
+		lineageTag: 3643068c-a006-448c-bb87-47e5e0018a59
+		summarizeBy: sum
+		sourceColumn: Realizat_RON
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column Ramas_RON
+		dataType: double
+		lineageTag: 43683e2b-ecd1-4289-a496-89c20fe8136c
+		summarizeBy: sum
+		sourceColumn: Ramas_RON
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition Bugete = m
+		mode: import
+		source =
+				let
+				    Source = SharePoint.Tables("https://asero0.sharepoint.com/sites/ucBudgetGuard", [ApiVersion = 15]),
+				    #"dff40545-aba0-4852-8949-dfa51b094819" = Source{[Id="dff40545-aba0-4852-8949-dfa51b094819"]}[Items],
+				    #"Renamed Columns" = Table.RenameColumns(#"dff40545-aba0-4852-8949-dfa51b094819",{{"ID", "ID.1"}}),
+				    Custom1 = Table.TransformColumnTypes(Table.SelectColumns(#"Renamed Columns", {"Title","Luna","CentruCost","Categorie","Buget_RON","Angajat_RON","Realizat_RON","Ramas_RON"}, MissingField.UseNull), {{"Buget_RON", type number}, {"Angajat_RON", type number}, {"Realizat_RON", type number}, {"Ramas_RON", type number}})
+				in
+				    Custom1
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

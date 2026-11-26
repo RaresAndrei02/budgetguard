@@ -1,0 +1,64 @@
+table Calendar
+	lineageTag: d1df646c-f2ec-4c31-84df-fab120e195a7
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: General Date
+		lineageTag: 82bec5ce-7ec5-438a-8480-699af793444e
+		summarizeBy: none
+		isNameInferred
+		isDataTypeInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Luna
+		dataType: string
+		lineageTag: 168de226-83fe-4e48-9191-f0525cc2ef2e
+		summarizeBy: none
+		isNameInferred
+		isDataTypeInferred
+		sourceColumn: [Luna]
+
+		annotation SummarizationSetBy = Automatic
+
+	column An
+		dataType: int64
+		formatString: 0
+		lineageTag: d2054ab3-f034-4cef-a11d-c619102e2eab
+		summarizeBy: none
+		isNameInferred
+		isDataTypeInferred
+		sourceColumn: [An]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nr luna'
+		dataType: int64
+		formatString: 0
+		lineageTag: 247f12e7-4b83-4ab6-8b0b-f888c257f75d
+		summarizeBy: none
+		isNameInferred
+		isDataTypeInferred
+		sourceColumn: [Nr luna]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Luna afisata'
+		dataType: string
+		lineageTag: 6cea6543-949c-4639-8966-14b894d0f770
+		summarizeBy: none
+		isNameInferred
+		isDataTypeInferred
+		sourceColumn: [Luna afisata]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Calendar = calculated
+		mode: import
+		source = ADDCOLUMNS ( CALENDAR ( DATE ( 2026, 9, 1 ), DATE ( 2027, 3, 31 ) ), "Luna", FORMAT ( [Date], "yyyy-MM" ), "An", YEAR ( [Date] ), "Nr luna", MONTH ( [Date] ), "Luna afisata", FORMAT ( [Date], "MMM yyyy" ) )
+
+	annotation PBI_Id = 3ccded66cd9a4d59a5a4eb4a3e2f6583
+
